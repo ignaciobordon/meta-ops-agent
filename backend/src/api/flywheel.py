@@ -280,6 +280,19 @@ Opportunities found ({len(opportunities)}):
 {creatives_summary}
 """
 
+    # Check conversion model for offline sales context
+    from backend.src.database.models import Organization
+    org_obj = db.query(Organization).filter(Organization.id == UUID(org_id)).first()
+    conversion_model = (org_obj.settings or {}).get("conversion_model", "online") if org_obj else "online"
+
+    offline_note = ""
+    if conversion_model == "offline":
+        offline_note = (
+            " IMPORTANT: This business closes sales offline (outside Meta). "
+            "Do NOT flag zero conversions or low ROAS as problems — these metrics are NOT meaningful. "
+            "Focus on top-of-funnel metrics: CTR, CPM, frequency, reach, engagement."
+        )
+
     # Call LLM
     try:
         from backend.src.llm.router import LLMRouter
@@ -295,6 +308,7 @@ Opportunities found ({len(opportunities)}):
                 "or insight, and (3) the recommended next action the team should take. "
                 "Be specific, actionable, and direct. Write in a professional tone. "
                 "Do NOT use markdown, bullet points, or headers — just plain text paragraphs."
+                + offline_note
             ),
             user_content=context,
             max_tokens=500,
