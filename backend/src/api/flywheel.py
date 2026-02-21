@@ -410,7 +410,11 @@ def export_run_pdf(
     )
 
     # Build PDF
-    pdf_bytes = _build_flywheel_pdf(data, opportunities, creatives, packs, db)
+    try:
+        pdf_bytes = _build_flywheel_pdf(data, opportunities, creatives, packs, db)
+    except Exception as exc:
+        logger.error("FLYWHEEL_PDF_ERROR | run={} | error={}", run_id, str(exc)[:300])
+        raise HTTPException(500, f"Failed to generate PDF: {str(exc)[:200]}")
 
     run_short = run_id[:8]
     filename = f"flywheel-report-{run_short}.pdf"
@@ -641,13 +645,13 @@ def _build_flywheel_pdf(
             strategy = opp.get("strategy") or opp.get("description") or opp.get("insight", "")
             if strategy:
                 pdf.set_font("Helvetica", "", 9)
-                pdf.multi_cell(0, 5, _safe(strategy, 500))
+                pdf.multi_cell(0, 5, _safe(strategy, 500), new_x="LMARGIN", new_y="NEXT")
 
             # Impact reasoning
             if impact_reasoning:
                 pdf.set_font("Helvetica", "I", 8)
                 pdf.set_text_color(80, 80, 120)
-                pdf.multi_cell(0, 4, _safe(f"Impact reasoning: {impact_reasoning}", 300))
+                pdf.multi_cell(0, 4, _safe(f"Impact reasoning: {impact_reasoning}", 300), new_x="LMARGIN", new_y="NEXT")
                 pdf.set_text_color(0, 0, 0)
 
             # Actionable items
@@ -660,14 +664,12 @@ def _build_flywheel_pdf(
                         action_text = action.get("action") or action.get("text") or str(action)
                     else:
                         action_text = str(action)
-                    pdf.cell(6, 5, "")
-                    pdf.cell(0, 5, _safe(f"-> {action_text}", 200), new_x="LMARGIN", new_y="NEXT")
+                    pdf.cell(0, 5, _safe(f"  -> {action_text}", 200), new_x="LMARGIN", new_y="NEXT")
                 pdf.set_text_color(0, 0, 0)
             elif isinstance(actions, str) and actions:
                 pdf.set_font("Helvetica", "I", 9)
                 pdf.set_text_color(0, 80, 0)
-                pdf.cell(6, 5, "")
-                pdf.cell(0, 5, _safe(f"-> {actions}", 200), new_x="LMARGIN", new_y="NEXT")
+                pdf.cell(0, 5, _safe(f"  -> {actions}", 200), new_x="LMARGIN", new_y="NEXT")
                 pdf.set_text_color(0, 0, 0)
 
             pdf.ln(3)
@@ -709,7 +711,7 @@ def _build_flywheel_pdf(
             if cr.ad_copy:
                 pdf.set_font("Helvetica", "", 9)
                 pdf.set_text_color(50, 50, 50)
-                pdf.multi_cell(0, 5, _safe(cr.ad_copy, 500))
+                pdf.multi_cell(0, 5, _safe(cr.ad_copy, 500), new_x="LMARGIN", new_y="NEXT")
                 pdf.set_text_color(0, 0, 0)
 
             # Dimension breakdown
@@ -802,12 +804,10 @@ def _build_flywheel_pdf(
                     val = output.get(field)
                     if val:
                         label = field.replace("_", " ").title()
-                        pdf.cell(8, 4, "")
-                        pdf.multi_cell(0, 4, _safe(f"{label}: {val}", 300))
+                        pdf.multi_cell(0, 4, _safe(f"    {label}: {val}", 300), new_x="LMARGIN", new_y="NEXT")
 
                 if v.score:
-                    pdf.cell(8, 4, "")
-                    pdf.cell(0, 4, _safe(f"Score: {v.score}/100"), new_x="LMARGIN", new_y="NEXT")
+                    pdf.cell(0, 4, _safe(f"    Score: {v.score}/100"), new_x="LMARGIN", new_y="NEXT")
                 pdf.ln(2)
 
             pdf.ln(3)
