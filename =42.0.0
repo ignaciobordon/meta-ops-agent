@@ -1,0 +1,17 @@
+Collecting cryptography
+  Downloading cryptography-46.0.5-cp311-abi3-win_amd64.whl.metadata (5.7 kB)
+Collecting cffi>=2.0.0 (from cryptography)
+  Downloading cffi-2.0.0-cp311-cp311-win_amd64.whl.metadata (2.6 kB)
+Collecting pycparser (from cffi>=2.0.0->cryptography)
+  Downloading pycparser-3.0-py3-none-any.whl.metadata (8.2 kB)
+Downloading cryptography-46.0.5-cp311-abi3-win_amd64.whl (3.5 MB)
+   ---------------------------------------- 3.5/3.5 MB 10.6 MB/s eta 0:00:00
+Downloading cffi-2.0.0-cp311-cp311-win_amd64.whl (182 kB)
+   --------------------------------------- 182.8/182.8 kB 10.8 MB/s eta 0:00:00
+Downloading pycparser-3.0-py3-none-any.whl (48 kB)
+   ---------------------------------------- 48.2/48.2 kB ? eta 0:00:00
+Installing collected packages: pycparser, cffi, cryptography
+Successfully installed cffi-2.0.0 cryptography-46.0.5 pycparser-3.0
+
+[notice] A new release of pip is available: 24.0 -> 26.0.1
+[notice] To update, run: python.exe -m pip install --upgrade pip

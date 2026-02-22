@@ -92,7 +92,7 @@ def create_run(
     if not org_id:
         raise HTTPException(400, "No organization context")
 
-    config = {
+    config = {k: v for k, v in {
         "ad_account_id": request.ad_account_id,
         "trigger": request.trigger,
         "brand_profile_id": request.brand_profile_id,
@@ -100,7 +100,7 @@ def create_run(
         "language": request.language,
         "n_variants": request.n_variants,
         "channels": request.channels,
-    }
+    }.items() if v is not None}
 
     svc = FlywheelService(db, org_id)
     run = svc.create_run(config)
@@ -772,6 +772,25 @@ def _build_flywheel_pdf(
 
         from backend.src.database.models import ContentVariant
 
+        # Channel-aware field display mapping
+        CHANNEL_DISPLAY_FIELDS = {
+            "ig_reel": ["hook", "script", "cta", "music_suggestion"],
+            "ig_post": ["caption", "cta", "visual_description"],
+            "ig_carousel": ["caption", "cta"],
+            "ig_story": ["cta"],
+            "tiktok_short": ["hook", "script", "cta", "sound_suggestion"],
+            "yt_short": ["hook", "script", "cta", "title"],
+            "yt_long": ["title", "hook", "cta"],
+            "fb_feed": ["copy", "headline", "cta", "visual_description"],
+            "fb_ad_copy": ["primary_text", "headline", "cta_button", "description"],
+            "x_post": ["text", "cta"],
+            "x_thread": ["hook_tweet", "cta_tweet"],
+            "linkedin_post": ["text", "hook", "cta"],
+            "email_newsletter": ["subject_line", "preview_text", "cta_text"],
+        }
+        # Fields that contain arrays needing special rendering
+        ARRAY_FIELDS = {"slides", "frames", "shot_list", "hashtags", "tweets"}
+
         for i, pack in enumerate(packs[:5], 1):
             if pdf.get_y() > 250:
                 pdf.add_page()
@@ -781,35 +800,394 @@ def _build_flywheel_pdf(
 
             pdf.set_font("Helvetica", "", 9)
             pdf.set_text_color(80, 80, 80)
-            pdf.cell(0, 5, _safe(f"Status: {pack.status.value if hasattr(pack.status, 'value') else pack.status}", 60), new_x="LMARGIN", new_y="NEXT")
+            status_str = pack.status.value if hasattr(pack.status, 'value') else pack.status
+            channels_list = pack.channels_json or []
+            channel_names = ", ".join(ch.get("channel", "?") for ch in channels_list) if channels_list else "N/A"
+            pdf.cell(0, 5, _safe(f"Status: {status_str} | Channels: {channel_names}", 200), new_x="LMARGIN", new_y="NEXT")
+
+            # Show opportunity context if available
+            pack_input = pack.input_json or {}
+            opp_info = pack_input.get("opportunity", {})
+            if opp_info and opp_info.get("title"):
+                pdf.set_font("Helvetica", "I", 8)
+                pdf.set_text_color(80, 80, 120)
+                pdf.cell(0, 5, _safe(f"Strategy: {opp_info.get('title', '')} - {opp_info.get('strategy', '')}", 250), new_x="LMARGIN", new_y="NEXT")
             pdf.set_text_color(0, 0, 0)
 
             variants = (
                 db.query(ContentVariant)
                 .filter(ContentVariant.content_pack_id == pack.id)
-                .order_by(ContentVariant.variant_index)
+                .order_by(ContentVariant.channel, ContentVariant.variant_index)
                 .all()
             )
 
-            for v in variants[:6]:
-                if pdf.get_y() > 270:
+            if not variants:
+                pdf.set_font("Helvetica", "I", 9)
+                pdf.set_text_color(150, 80, 80)
+                pdf.cell(0, 5, "  No variants generated", new_x="LMARGIN", new_y="NEXT")
+                pdf.set_text_color(0, 0, 0)
+                pdf.ln(3)
+                continue
+
+            current_channel = None
+            for v in variants[:18]:
+                if pdf.get_y() > 255:
                     pdf.add_page()
+
+                # Channel subheader
+                if v.channel != current_channel:
+                    current_channel = v.channel
+                    pdf.set_font("Helvetica", "B", 10)
+                    pdf.set_text_color(30, 80, 130)
+                    pdf.cell(0, 6, _safe(f"  {v.channel.replace('_', ' ').upper()} ({v.format or 'default'})", 100), new_x="LMARGIN", new_y="NEXT")
+                    pdf.set_text_color(0, 0, 0)
+
                 pdf.set_font("Helvetica", "B", 9)
-                pdf.cell(0, 5, _safe(f"  Variant {v.variant_index} - {v.channel} ({v.format or 'default'})", 100), new_x="LMARGIN", new_y="NEXT")
+                score_str = f" | Score: {v.score:.0f}/100" if v.score else ""
+                pdf.cell(0, 5, _safe(f"    Variant {v.variant_index}{score_str}", 100), new_x="LMARGIN", new_y="NEXT")
 
                 output = v.output_json or {}
                 pdf.set_font("Helvetica", "", 8)
-                # Show key output fields
-                for field in ("hook", "headline", "caption", "script", "cta", "visual_direction"):
+
+                # Use channel-aware fields, falling back to all fields
+                display_fields = CHANNEL_DISPLAY_FIELDS.get(v.channel, [])
+                rendered_keys = set()
+
+                # Render priority fields first
+                for field in display_fields:
                     val = output.get(field)
                     if val:
+                        rendered_keys.add(field)
                         label = field.replace("_", " ").title()
-                        pdf.multi_cell(0, 4, _safe(f"    {label}: {val}", 300), new_x="LMARGIN", new_y="NEXT")
+                        pdf.set_font("Helvetica", "B", 8)
+                        pdf.cell(0, 4, _safe(f"      {label}:", 80), new_x="LMARGIN", new_y="NEXT")
+                        pdf.set_font("Helvetica", "", 8)
+                        pdf.multi_cell(0, 4, _safe(f"      {val}", 400), new_x="LMARGIN", new_y="NEXT")
 
-                if v.score:
-                    pdf.cell(0, 4, _safe(f"    Score: {v.score}/100"), new_x="LMARGIN", new_y="NEXT")
+                # Render array fields (slides, frames, shot_list, hashtags)
+                for arr_field in ARRAY_FIELDS:
+                    arr_val = output.get(arr_field)
+                    if arr_val and isinstance(arr_val, list):
+                        rendered_keys.add(arr_field)
+                        label = arr_field.replace("_", " ").title()
+                        pdf.set_font("Helvetica", "B", 8)
+                        pdf.cell(0, 4, _safe(f"      {label} ({len(arr_val)} items):", 100), new_x="LMARGIN", new_y="NEXT")
+                        pdf.set_font("Helvetica", "", 7)
+                        for idx, item in enumerate(arr_val[:8], 1):
+                            if isinstance(item, dict):
+                                item_text = " | ".join(f"{k}: {v}" for k, v in item.items())
+                            else:
+                                item_text = str(item)
+                            pdf.multi_cell(0, 3, _safe(f"        {idx}. {item_text}", 300), new_x="LMARGIN", new_y="NEXT")
+
+                # Render remaining non-rendered fields
+                for field_key, field_val in output.items():
+                    if field_key in rendered_keys or field_key in ARRAY_FIELDS:
+                        continue
+                    if field_val and not isinstance(field_val, (list, dict)):
+                        label = field_key.replace("_", " ").title()
+                        pdf.set_font("Helvetica", "", 8)
+                        pdf.multi_cell(0, 4, _safe(f"      {label}: {field_val}", 300), new_x="LMARGIN", new_y="NEXT")
+
+                # Rationale
+                if v.rationale_text:
+                    pdf.set_font("Helvetica", "I", 7)
+                    pdf.set_text_color(100, 100, 100)
+                    pdf.multi_cell(0, 3, _safe(f"      Rationale: {v.rationale_text}", 300), new_x="LMARGIN", new_y="NEXT")
+                    pdf.set_text_color(0, 0, 0)
+
                 pdf.ln(2)
 
+            pdf.ln(3)
+
+    # ── Strategic Analysis (WHY) ──
+    if opportunities:
+        pdf.add_page()
+        pdf.set_font("Helvetica", "B", 18)
+        pdf.cell(0, 12, "Strategic Analysis: Why These Strategies", new_x="LMARGIN", new_y="NEXT")
+        pdf.set_font("Helvetica", "", 9)
+        pdf.set_text_color(80, 80, 80)
+        pdf.multi_cell(0, 5, _safe(
+            "This section explains the data-driven reasoning behind each selected strategy. "
+            "Every opportunity was identified by combining brand positioning, competitive intelligence, "
+            "ad performance data, and market gap analysis through our AI-powered Unified Intelligence engine.", 500
+        ), new_x="LMARGIN", new_y="NEXT")
+        pdf.set_text_color(0, 0, 0)
+        pdf.ln(4)
+
+        # Performance context from saturation step
+        sat_step = next((s for s in run_data.get("steps", []) if s["step_name"] == "saturation_check"), None)
+        sat_arts = (sat_step or {}).get("artifacts_json", {})
+        if sat_arts:
+            pdf.set_font("Helvetica", "B", 11)
+            pdf.cell(0, 7, "Current Performance Snapshot", new_x="LMARGIN", new_y="NEXT")
+            pdf.set_font("Helvetica", "", 9)
+            pdf.set_text_color(50, 50, 50)
+            spend_14d = float(sat_arts.get("total_spend_14d", 0) or 0)
+            pdf.multi_cell(0, 5, _safe(
+                f"Active ads: {sat_arts.get('ads_analyzed', 0)} | "
+                f"Saturated: {sat_arts.get('saturated_count', 0)} | "
+                f"Fresh: {sat_arts.get('fresh_count', 0)} | "
+                f"Avg frequency: {sat_arts.get('avg_frequency', 0)} | "
+                f"14-day spend: ${spend_14d:,.0f}", 400
+            ), new_x="LMARGIN", new_y="NEXT")
+            # Fresh ads detail
+            for ad in sat_arts.get("fresh_ads", [])[:3]:
+                pdf.cell(0, 4, _safe(f"  Fresh: {ad.get('name', '')} (CTR: {ad.get('ctr', 0)}%)", 150), new_x="LMARGIN", new_y="NEXT")
+            pdf.set_text_color(0, 0, 0)
+            pdf.ln(4)
+
+        # Source breakdown
+        opp_step = next((s for s in run_data.get("steps", []) if s["step_name"] == "opportunities"), None)
+        opp_arts = (opp_step or {}).get("artifacts_json", {})
+        src_breakdown = opp_arts.get("source_breakdown", {})
+        pb = opp_arts.get("priority_breakdown", {})
+        if src_breakdown or pb:
+            pdf.set_font("Helvetica", "B", 11)
+            pdf.cell(0, 7, "Opportunity Sources & Priority Distribution", new_x="LMARGIN", new_y="NEXT")
+            pdf.set_font("Helvetica", "", 9)
+            pdf.set_text_color(50, 50, 50)
+            if pb:
+                pdf.cell(0, 5, _safe(f"Priority: {pb.get('high', 0)} high | {pb.get('medium', 0)} medium | {pb.get('low', 0)} low", 200), new_x="LMARGIN", new_y="NEXT")
+            if src_breakdown:
+                sources = " | ".join(f"{k}: {v}" for k, v in src_breakdown.items())
+                pdf.cell(0, 5, _safe(f"Data sources: {sources}", 200), new_x="LMARGIN", new_y="NEXT")
+            pdf.set_text_color(0, 0, 0)
+            pdf.ln(4)
+
+        # Per-opportunity strategic rationale
+        sorted_opps = sorted(opportunities, key=lambda o: float(o.get("estimated_impact", 0) or 0), reverse=True)
+        for i, opp in enumerate(sorted_opps[:8], 1):
+            if pdf.get_y() > 220:
+                pdf.add_page()
+
+            title = opp.get("title") or opp.get("gap_id", f"Strategy {i}")
+            priority = opp.get("priority", "medium")
+            impact = float(opp.get("estimated_impact", 0) or 0)
+            confidence = float(opp.get("confidence", 0) or 0)
+            gap_id = opp.get("gap_id", "")
+
+            # Title with priority color
+            pdf.set_font("Helvetica", "B", 11)
+            if priority == "high":
+                pdf.set_text_color(180, 60, 40)
+            elif priority == "medium":
+                pdf.set_text_color(160, 130, 40)
+            else:
+                pdf.set_text_color(80, 80, 80)
+            pdf.cell(0, 7, _safe(f"{i}. [{priority.upper()}] {title}", 150), new_x="LMARGIN", new_y="NEXT")
+            pdf.set_text_color(0, 0, 0)
+
+            # Metrics bar
+            pdf.set_font("Helvetica", "", 9)
+            pdf.set_text_color(60, 60, 60)
+            metrics = f"Expected impact: {impact:.0%} | Confidence: {confidence:.0%}"
+            primary_src = opp.get("primary_source", "")
+            sources = opp.get("sources", [])
+            if primary_src:
+                metrics += f" | Primary source: {primary_src}"
+            pdf.cell(0, 5, _safe(metrics, 250), new_x="LMARGIN", new_y="NEXT")
+            if sources and isinstance(sources, list):
+                pdf.set_font("Helvetica", "I", 8)
+                pdf.cell(0, 4, _safe(f"Data signals: {', '.join(str(s) for s in sources[:5])}", 250), new_x="LMARGIN", new_y="NEXT")
+            pdf.set_text_color(0, 0, 0)
+
+            # WHY section: impact reasoning
+            impact_reasoning = opp.get("impact_reasoning", "")
+            if impact_reasoning:
+                pdf.set_font("Helvetica", "B", 9)
+                pdf.cell(0, 6, "    Why this strategy:", new_x="LMARGIN", new_y="NEXT")
+                pdf.set_font("Helvetica", "", 9)
+                pdf.set_text_color(40, 40, 40)
+                pdf.multi_cell(0, 4, _safe(f"    {impact_reasoning}", 600), new_x="LMARGIN", new_y="NEXT")
+                pdf.set_text_color(0, 0, 0)
+
+            # Description / context
+            description = opp.get("description", "")
+            if description and description != impact_reasoning:
+                pdf.set_font("Helvetica", "B", 9)
+                pdf.cell(0, 6, "    Context:", new_x="LMARGIN", new_y="NEXT")
+                pdf.set_font("Helvetica", "", 8)
+                pdf.set_text_color(60, 60, 60)
+                pdf.multi_cell(0, 4, _safe(f"    {description}", 600), new_x="LMARGIN", new_y="NEXT")
+                pdf.set_text_color(0, 0, 0)
+
+            pdf.ln(3)
+
+    # ── Implementation Playbook (HOW) ──
+    if opportunities:
+        pdf.add_page()
+        pdf.set_font("Helvetica", "B", 18)
+        pdf.cell(0, 12, "Implementation Playbook: How to Execute", new_x="LMARGIN", new_y="NEXT")
+        pdf.set_font("Helvetica", "", 9)
+        pdf.set_text_color(80, 80, 80)
+        pdf.multi_cell(0, 5, _safe(
+            "Step-by-step action plan for each strategy. Assign owners, follow timelines, "
+            "and track KPIs to ensure execution translates into measurable results. "
+            "Strategies are ordered by estimated impact.", 500
+        ), new_x="LMARGIN", new_y="NEXT")
+        pdf.set_text_color(0, 0, 0)
+        pdf.ln(4)
+
+        # Build a map of pack goals for cross-referencing
+        pack_map = {}
+        for pk in (packs or []):
+            pk_goal = pk.goal or "awareness"
+            if pk_goal not in pack_map:
+                variant_count = db.query(ContentVariant).filter(
+                    ContentVariant.content_pack_id == pk.id
+                ).count() if pk else 0
+                ch_list = pk.channels_json or []
+                pack_map[pk_goal] = {
+                    "id": str(pk.id)[:8],
+                    "channels": [ch.get("channel", "?") for ch in ch_list],
+                    "variants": variant_count,
+                    "language": pk.language or "es-AR",
+                }
+
+        sorted_opps = sorted(opportunities, key=lambda o: float(o.get("estimated_impact", 0) or 0), reverse=True)
+        for i, opp in enumerate(sorted_opps[:8], 1):
+            if pdf.get_y() > 200:
+                pdf.add_page()
+
+            title = opp.get("title") or opp.get("gap_id", f"Strategy {i}")
+            priority = opp.get("priority", "medium")
+            impact = float(opp.get("estimated_impact", 0) or 0)
+            strategy_text = opp.get("strategy", "")
+
+            # Section header
+            pdf.set_font("Helvetica", "B", 12)
+            if priority == "high":
+                pdf.set_text_color(180, 60, 40)
+            elif priority == "medium":
+                pdf.set_text_color(160, 130, 40)
+            else:
+                pdf.set_text_color(80, 80, 80)
+            pdf.cell(0, 8, _safe(f"Strategy {i}: {title}", 130), new_x="LMARGIN", new_y="NEXT")
+            pdf.set_text_color(0, 0, 0)
+
+            pdf.set_font("Helvetica", "", 8)
+            pdf.set_text_color(100, 100, 100)
+            pdf.cell(0, 4, _safe(f"Priority: {priority.upper()} | Expected impact: {impact:.0%}", 150), new_x="LMARGIN", new_y="NEXT")
+            pdf.set_text_color(0, 0, 0)
+            pdf.ln(2)
+
+            # Action steps from strategy
+            if strategy_text:
+                pdf.set_font("Helvetica", "B", 10)
+                pdf.cell(0, 6, "    Action Steps:", new_x="LMARGIN", new_y="NEXT")
+                pdf.set_font("Helvetica", "", 9)
+
+                # Parse numbered steps from strategy text
+                import re as _re
+                steps_raw = _re.split(r'\n\s*\d+\.\s*', strategy_text)
+                if len(steps_raw) <= 1:
+                    # Try splitting on "1. " "2. " etc.
+                    steps_raw = _re.split(r'(?:^|\n)\s*\d+\.\s*', strategy_text)
+
+                step_items = [s.strip() for s in steps_raw if s.strip()]
+                if step_items:
+                    for si, step_text in enumerate(step_items[:7], 1):
+                        if pdf.get_y() > 265:
+                            pdf.add_page()
+                        pdf.set_font("Helvetica", "B", 9)
+                        pdf.set_text_color(30, 80, 50)
+                        pdf.cell(8, 5, "")
+                        pdf.cell(8, 5, _safe(f"{si}.", 5))
+                        pdf.set_font("Helvetica", "", 9)
+                        pdf.set_text_color(30, 30, 30)
+                        pdf.multi_cell(0, 5, _safe(step_text, 400), new_x="LMARGIN", new_y="NEXT")
+                else:
+                    pdf.multi_cell(0, 5, _safe(f"    {strategy_text}", 600), new_x="LMARGIN", new_y="NEXT")
+
+            pdf.ln(2)
+
+            # Content assets available
+            # Try to match opportunity to content pack by goal keywords
+            opp_title_lower = (opp.get("title", "") or "").lower()
+            matched_pack = None
+            if "premium" in opp_title_lower or "sale" in opp_title_lower or "monetiz" in opp_title_lower or "revenue" in opp_title_lower:
+                matched_pack = pack_map.get("sales")
+            if not matched_pack and ("lead" in opp_title_lower or "captar" in opp_title_lower):
+                matched_pack = pack_map.get("leads")
+            if not matched_pack and ("retenci" in opp_title_lower or "retent" in opp_title_lower or "transformation" in opp_title_lower or "documentation" in opp_title_lower):
+                matched_pack = pack_map.get("retention")
+            if not matched_pack:
+                # Use first available pack
+                matched_pack = next(iter(pack_map.values()), None)
+
+            if matched_pack and matched_pack.get("variants", 0) > 0:
+                if pdf.get_y() > 255:
+                    pdf.add_page()
+                pdf.set_font("Helvetica", "B", 10)
+                pdf.cell(0, 6, "    Content Assets Ready:", new_x="LMARGIN", new_y="NEXT")
+                pdf.set_font("Helvetica", "", 9)
+                pdf.set_text_color(30, 80, 130)
+                ch_str = ", ".join(matched_pack["channels"][:6])
+                pdf.cell(0, 5, _safe(
+                    f"    Content Pack {matched_pack['id']} | {matched_pack['variants']} variants | "
+                    f"Channels: {ch_str} | Language: {matched_pack['language']}", 250
+                ), new_x="LMARGIN", new_y="NEXT")
+                pdf.set_text_color(0, 0, 0)
+                pdf.set_font("Helvetica", "I", 8)
+                pdf.set_text_color(80, 80, 80)
+                pdf.cell(0, 4, _safe(
+                    "    Use the Content Studio page to view, lock preferred variants, and export assets.", 250
+                ), new_x="LMARGIN", new_y="NEXT")
+                pdf.set_text_color(0, 0, 0)
+
+            pdf.ln(2)
+
+            # KPIs to track
+            if pdf.get_y() > 255:
+                pdf.add_page()
+            pdf.set_font("Helvetica", "B", 10)
+            pdf.cell(0, 6, "    KPIs to Track:", new_x="LMARGIN", new_y="NEXT")
+            pdf.set_font("Helvetica", "", 9)
+            pdf.set_text_color(50, 50, 50)
+
+            # Generate relevant KPIs based on opportunity keywords
+            opp_text_lower = (opp.get("title", "") + " " + opp.get("strategy", "")).lower()
+            kpis = []
+            if any(kw in opp_text_lower for kw in ["lead", "captar", "formulario", "sign up"]):
+                kpis = ["Cost per lead (CPL)", "Lead volume per week", "Lead quality score", "Form completion rate"]
+            elif any(kw in opp_text_lower for kw in ["sale", "venta", "revenue", "premium", "monetiz", "price"]):
+                kpis = ["Revenue per customer", "Conversion rate", "Average order value", "Customer acquisition cost (CAC)"]
+            elif any(kw in opp_text_lower for kw in ["retenci", "retent", "alumni", "churn", "sustain"]):
+                kpis = ["Monthly retention rate", "Churn rate", "Lifetime value (LTV)", "Re-engagement rate"]
+            elif any(kw in opp_text_lower for kw in ["content", "transformation", "documentation"]):
+                kpis = ["Content engagement rate", "Avg. time on content", "Share/save rate", "Content-to-lead conversion"]
+            elif any(kw in opp_text_lower for kw in ["saturation", "creative", "scale", "fresh"]):
+                kpis = ["Ad frequency", "CTR trend (week-over-week)", "CPM efficiency", "Creative fatigue index"]
+            elif any(kw in opp_text_lower for kw in ["budget", "diversif", "campaign", "portfolio"]):
+                kpis = ["ROAS by campaign objective", "Budget utilization rate", "Cross-campaign CTR", "Cost per result by objective"]
+            elif any(kw in opp_text_lower for kw in ["naming", "tracking", "utm"]):
+                kpis = ["Attribution accuracy", "Campaign identification speed", "Cross-channel tracking coverage"]
+            elif any(kw in opp_text_lower for kw in ["competitor", "counter", "exploit", "positioning"]):
+                kpis = ["Share of voice vs competitor", "Brand mention sentiment", "Competitive content engagement", "Audience overlap shift"]
+            else:
+                kpis = ["CTR (Click-through rate)", "CPM (Cost per 1000 impressions)", "Engagement rate", "Reach growth"]
+
+            for kpi in kpis[:4]:
+                pdf.cell(0, 5, _safe(f"    * {kpi}", 150), new_x="LMARGIN", new_y="NEXT")
+            pdf.set_text_color(0, 0, 0)
+
+            # Timeline
+            pdf.set_font("Helvetica", "B", 10)
+            pdf.cell(0, 6, "    Suggested Timeline:", new_x="LMARGIN", new_y="NEXT")
+            pdf.set_font("Helvetica", "", 9)
+            pdf.set_text_color(50, 50, 50)
+            if priority == "high":
+                pdf.cell(0, 5, _safe("    Week 1-2: Set up and launch | Week 3-4: Monitor and optimize | Week 5-8: Scale what works", 250), new_x="LMARGIN", new_y="NEXT")
+            else:
+                pdf.cell(0, 5, _safe("    Week 1-4: Plan and prepare | Week 5-8: Launch and test | Week 9-12: Evaluate and iterate", 250), new_x="LMARGIN", new_y="NEXT")
+            pdf.set_text_color(0, 0, 0)
+
+            pdf.ln(5)
+
+            # Separator line
+            pdf.set_draw_color(200, 200, 200)
+            pdf.line(pdf.get_x() + 10, pdf.get_y(), pdf.get_x() + 180, pdf.get_y())
             pdf.ln(3)
 
     # ── Footer ──

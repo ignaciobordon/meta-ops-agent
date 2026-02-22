@@ -1,0 +1,9 @@
+Collecting prometheus_client
+  Downloading prometheus_client-0.24.1-py3-none-any.whl.metadata (2.1 kB)
+Collecting pyjwt
+  Downloading pyjwt-2.11.0-py3-none-any.whl.metadata (4.0 kB)
+Downloading prometheus_client-0.24.1-py3-none-any.whl (64 kB)
+   ---------------------------------------- 64.1/64.1 kB 1.1 MB/s eta 0:00:00
+Downloading pyjwt-2.11.0-py3-none-any.whl (28 kB)
+Installing collected packages: pyjwt, prometheus_client
+Successfully installed prometheus_client-0.24.1 pyjwt-2.11.0

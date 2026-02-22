@@ -1,0 +1,270 @@
+.flywheel-pipeline {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-2xl);
+}
+
+.flywheel-step-card {
+  background: var(--parchment-50);
+  border: 1px solid var(--parchment-300);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-lg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-sm);
+  text-align: center;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.flywheel-step-card:hover {
+  box-shadow: 0 6px 20px rgba(26, 26, 26, 0.1);
+}
+
+.flywheel-step-card.status-succeeded {
+  border-color: var(--verdigris-500);
+  border-top: 3px solid var(--verdigris-500);
+  background: var(--parchment-50);
+}
+
+.flywheel-step-card.status-failed {
+  border-color: var(--vermillion-500);
+  border-top: 3px solid var(--vermillion-500);
+  background: var(--parchment-50);
+}
+
+.flywheel-step-card.status-running {
+  border-color: var(--goldleaf-500);
+  border-top: 3px solid var(--copper);
+  background: var(--parchment-50);
+}
+
+.flywheel-step-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--parchment-100);
+  border: 2px solid var(--sepia);
+  box-shadow: inset 0 0 4px rgba(0, 0, 0, 0.1);
+}
+
+.flywheel-step-card.status-succeeded .flywheel-step-icon {
+  background: rgba(107, 155, 122, 0.12);
+  color: var(--verdigris-600);
+  border-color: var(--verdigris-500);
+}
+
+.flywheel-step-card.status-failed .flywheel-step-icon {
+  background: rgba(196, 80, 58, 0.10);
+  color: var(--vermillion-600);
+  border-color: var(--vermillion-500);
+}
+
+.flywheel-step-card.status-running .flywheel-step-icon {
+  background: rgba(201, 168, 76, 0.12);
+  color: var(--goldleaf-600);
+  border-color: var(--goldleaf-500);
+  animation: gearRotate 3s linear infinite;
+}
+
+.flywheel-step-name {
+  font-family: 'Cinzel', 'Times New Roman', serif;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: var(--color-text-primary);
+}
+
+.flywheel-step-status {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-weight: 500;
+  font-family: 'Inter', sans-serif;
+}
+
+.flywheel-step-status.status-idle { background: var(--gray-100); color: var(--gray-500); }
+.flywheel-step-status.status-pending { background: var(--gray-100); color: var(--gray-500); }
+.flywheel-step-status.status-running {
+  border: 1px solid var(--goldleaf-500);
+  color: var(--goldleaf-700);
+  background: transparent;
+  animation: candleGlow 2s ease-in-out infinite;
+}
+.flywheel-step-status.status-succeeded {
+  border: 1px solid var(--verdigris-500);
+  color: var(--verdigris-700);
+  background: transparent;
+}
+.flywheel-step-status.status-failed {
+  border: 1px solid var(--vermillion-500);
+  color: var(--vermillion-700);
+  background: transparent;
+}
+.flywheel-step-status.status-canceled { background: var(--gray-100); color: var(--gray-500); }
+.flywheel-step-status.status-skipped { background: var(--gray-100); color: var(--gray-500); }
+
+.flywheel-step-btn {
+  font-size: 12px;
+  padding: 4px 10px;
+}
+
+.flywheel-step-actions {
+  display: flex;
+  gap: 4px;
+  margin-top: var(--spacing-xs);
+}
+
+.flywheel-step-brief {
+  font-size: 11px;
+  color: var(--verdigris-600);
+  line-height: 1.3;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.flywheel-step-error {
+  font-size: 11px;
+  color: var(--vermillion-600);
+  line-height: 1.3;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.flywheel-step-details {
+  width: 100%;
+  margin-top: var(--spacing-sm);
+  padding-top: var(--spacing-sm);
+  border-top: 1px solid var(--parchment-300);
+  text-align: left;
+}
+
+.flywheel-detail-row {
+  display: flex;
+  gap: 6px;
+  font-size: 10px;
+  line-height: 1.5;
+  margin-bottom: 2px;
+}
+
+.flywheel-detail-key {
+  font-weight: 600;
+  color: var(--color-text-muted);
+  text-transform: capitalize;
+  min-width: 80px;
+  flex-shrink: 0;
+}
+
+.flywheel-detail-val {
+  color: var(--color-text-primary);
+  word-break: break-all;
+}
+
+.btn-ghost {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  border-radius: 4px;
+  color: var(--color-text-muted);
+  display: inline-flex;
+  align-items: center;
+}
+
+.btn-ghost:hover {
+  background: var(--parchment-100);
+  color: var(--color-text-primary);
+}
+
+.flywheel-run-summary {
+  background: var(--parchment-50);
+  border: 1px solid var(--parchment-300);
+  border-left: 4px solid var(--goldleaf-500);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-xl);
+  margin-bottom: var(--spacing-xl);
+}
+
+.flywheel-run-summary h3 {
+  font-family: 'Cinzel', 'Times New Roman', serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--goldleaf-700);
+  margin: 0 0 var(--spacing-xs);
+}
+
+.flywheel-run-summary p {
+  font-size: 13px;
+  color: var(--color-text-secondary);
+  margin: 0;
+}
+
+.flywheel-next-action {
+  background: var(--color-surface);
+  border: 1px solid var(--parchment-300);
+  border-left: 4px solid var(--verdigris-500);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-xl);
+  margin-bottom: var(--spacing-2xl);
+}
+
+.flywheel-next-action h3 {
+  font-family: 'Cinzel', 'Times New Roman', serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--verdigris-700);
+  margin: 0 0 var(--spacing-sm);
+}
+
+.flywheel-summary-text {
+  font-size: 14px;
+  line-height: 1.65;
+  color: var(--color-text-primary);
+  margin: 0 0 var(--spacing-xs);
+}
+
+.flywheel-runs-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.flywheel-runs-table th,
+.flywheel-runs-table td {
+  text-align: left;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--parchment-300);
+  font-size: 13px;
+}
+
+.flywheel-runs-table th {
+  font-variant: small-caps;
+  font-weight: 600;
+  color: var(--sepia);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.flywheel-runs-table tbody tr:hover {
+  background: rgba(184, 146, 106, 0.06);
+}
+
+.flywheel-runs-table tbody tr.active {
+  border-bottom: 2px solid var(--goldleaf-500);
+}
+
+.spin-icon {
+  animation: gearRotate 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}

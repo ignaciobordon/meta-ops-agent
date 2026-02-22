@@ -1,0 +1,496 @@
+/* BrandProfile page styles */
+
+.brand-profile-page {
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.brand-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1.5rem;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.brand-header-content {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.brand-header-content .page-icon {
+  color: var(--vermillion-500);
+}
+
+.brand-header-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+/* Profile Selector */
+.brand-selector {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background: var(--bg-card, #fff);
+  border: 1px solid var(--border, #e5e5e5);
+  border-radius: 12px;
+}
+
+.brand-selector select {
+  flex: 1;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border, #e5e5e5);
+  border-radius: 8px;
+  background: var(--bg-main, #fff);
+  font-size: 14px;
+}
+
+/* Status Badge */
+.brand-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.brand-status-ready {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.brand-status-pending_analysis {
+  background: #fff3e0;
+  color: #e65100;
+}
+
+.brand-status-analyzing {
+  background: #e3f2fd;
+  color: #1565c0;
+}
+
+.brand-status-error {
+  background: #ffebee;
+  color: #c62828;
+}
+
+/* Raw Text Editor */
+.brand-editor {
+  margin-bottom: 1.5rem;
+}
+
+.brand-editor-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.brand-editor-header h3 {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.brand-raw-textarea {
+  width: 100%;
+  min-height: 250px;
+  padding: 1rem;
+  border: 1px solid var(--border, #e5e5e5);
+  border-radius: 10px;
+  font-family: monospace;
+  font-size: 13px;
+  line-height: 1.5;
+  resize: vertical;
+  background: var(--bg-card, #fff);
+}
+
+.brand-raw-textarea:focus {
+  outline: none;
+  border-color: var(--verdigris-500);
+  box-shadow: 0 0 0 3px rgba(107, 155, 122, 0.15);
+}
+
+/* Layer Cards Grid */
+.brand-layers-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.brand-layer-card {
+  background: var(--color-surface);
+  border: 1px solid var(--parchment-200);
+  border-radius: 12px;
+  padding: 1.25rem;
+  transition: box-shadow 0.2s;
+}
+
+.brand-layer-card:hover {
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+}
+
+.brand-layer-card h3 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 700;
+  margin-bottom: 0.75rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid var(--copper);
+}
+
+.brand-layer-card h3 .layer-icon {
+  color: var(--copper);
+}
+
+.layer-field {
+  margin-bottom: 0.75rem;
+}
+
+.layer-field-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-muted, #888);
+  margin-bottom: 4px;
+}
+
+.layer-field-value {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-primary, #333);
+}
+
+.layer-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.layer-tag {
+  display: inline-block;
+  padding: 3px 10px;
+  background: var(--bg-main, #f5f5f0);
+  border: 1px solid var(--border, #e5e5e5);
+  border-radius: 999px;
+  font-size: 12px;
+  color: var(--text-secondary, #555);
+}
+
+/* Avatar Sub-Card */
+.avatar-card {
+  background: var(--bg-main, #f9f9f5);
+  border: 1px solid var(--border, #e5e5e5);
+  border-radius: 8px;
+  padding: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.avatar-card h4 {
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  color: var(--terracotta-600, #b36b47);
+}
+
+/* Competitor Sub-Card */
+.competitor-card {
+  background: var(--bg-main, #f9f9f5);
+  border: 1px solid var(--border, #e5e5e5);
+  border-radius: 8px;
+  padding: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.competitor-card h4 {
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+/* Opportunity Sub-Card */
+.opportunity-sub-card {
+  background: var(--bg-main, #f9f9f5);
+  border: 1px solid var(--border, #e5e5e5);
+  border-radius: 8px;
+  padding: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.opportunity-sub-card h4 {
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.impact-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+}
+
+.impact-high {
+  background: #e8f5e9;
+  color: #2e7d32;
+}
+
+.impact-medium {
+  background: #fff3e0;
+  color: #e65100;
+}
+
+.impact-low {
+  background: #ffebee;
+  color: #c62828;
+}
+
+/* Create Modal */
+.brand-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.brand-modal {
+  background: var(--bg-card, #fff);
+  border-radius: 16px;
+  width: 90%;
+  max-width: 700px;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: 2rem;
+}
+
+.brand-modal h2 {
+  margin-bottom: 1rem;
+}
+
+.brand-modal-field {
+  margin-bottom: 1rem;
+}
+
+.brand-modal-field label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.brand-modal-field input,
+.brand-modal-field textarea {
+  width: 100%;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--border, #e5e5e5);
+  border-radius: 8px;
+  font-size: 13px;
+}
+
+.brand-modal-field textarea {
+  min-height: 200px;
+  font-family: monospace;
+  line-height: 1.5;
+  resize: vertical;
+}
+
+.brand-modal-actions {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+  margin-top: 1rem;
+}
+
+/* Full-Width Layers */
+.brand-layer-full {
+  grid-column: 1 / -1;
+}
+
+/* Empty state */
+.brand-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  text-align: center;
+  gap: 1rem;
+  color: var(--text-muted, #888);
+}
+
+.brand-empty-state h3 {
+  color: var(--text-primary, #333);
+  font-size: 18px;
+}
+
+/* Error banner */
+.brand-error-banner {
+  background: #ffebee;
+  border: 1px solid #ef9a9a;
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1rem;
+  color: #c62828;
+  font-size: 13px;
+}
+
+/* Analyzing overlay */
+.brand-analyzing {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0.75rem 1rem;
+  background: #e3f2fd;
+  border: 1px solid #90caf9;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  color: #1565c0;
+  font-size: 13px;
+}
+
+/* ── Campaign Intelligence Section ───────────────────────────────────────── */
+
+.campaign-intelligence {
+  background: var(--bg-card, #fff);
+  border: 1px solid var(--border, #e5e5e5);
+  border-radius: 12px;
+  padding: 1.25rem;
+  margin-bottom: 1.5rem;
+  border-left: 4px solid var(--verdigris-500);
+}
+
+.ci-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.ci-header h3 {
+  font-family: 'Cinzel', 'Times New Roman', serif;
+  font-size: 16px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.ci-subtitle {
+  font-size: 12px;
+  color: var(--text-muted, #888);
+  margin: 2px 0 0 0;
+}
+
+.ci-kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+}
+
+.ci-kpi {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  background: var(--bg-main, #f9f9f5);
+  border: 1px solid var(--border, #e5e5e5);
+  border-radius: 8px;
+}
+
+.ci-kpi svg {
+  color: var(--olive-500, #8b9d5d);
+  flex-shrink: 0;
+}
+
+.ci-kpi-value {
+  display: block;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-primary, #333);
+}
+
+.ci-kpi-label {
+  display: block;
+  font-size: 11px;
+  color: var(--text-muted, #888);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.ci-campaigns {
+  margin-top: 0.75rem;
+}
+
+.ci-campaigns h4 {
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+  color: var(--text-secondary, #555);
+}
+
+.ci-campaigns-table {
+  border: 1px solid var(--border, #e5e5e5);
+  border-radius: 8px;
+  overflow: hidden;
+  font-size: 12px;
+}
+
+.ci-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr 0.8fr 0.6fr 0.6fr;
+  padding: 0.5rem 0.75rem;
+  gap: 0.5rem;
+  align-items: center;
+  border-bottom: 1px solid var(--border, #e5e5e5);
+}
+
+.ci-row:last-child {
+  border-bottom: none;
+}
+
+.ci-row-header {
+  background: var(--bg-main, #f5f5f0);
+  font-weight: 700;
+  color: var(--text-muted, #888);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  font-size: 11px;
+}
+
+.ci-campaign-name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-weight: 500;
+}
+
+.ci-objective {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--text-muted, #888);
+  font-size: 11px;
+}

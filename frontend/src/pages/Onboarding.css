@@ -1,0 +1,288 @@
+/* Sprint 8: Onboarding Wizard — Renaissance / Da Vinci Codex */
+
+.onboarding {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-background, #f9fafb);
+  padding: 2rem;
+}
+
+.onboarding-container {
+  max-width: 800px;
+  width: 100%;
+}
+
+.onboarding-loading {
+  text-align: center;
+  padding: 4rem;
+  color: var(--color-text-secondary, #6b7280);
+}
+
+/* ── Stepper ─────────────────────────────────────────────────── */
+
+.onboarding-stepper {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-bottom: 2.5rem;
+}
+
+.stepper-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.4rem;
+  flex: 1;
+  max-width: 120px;
+}
+
+.stepper-circle {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.85rem;
+  font-weight: 600;
+  background: var(--color-border, #e5e7eb);
+  color: var(--color-text-secondary, #6b7280);
+  transition: all 0.3s;
+}
+
+.stepper-step.active .stepper-circle {
+  background: var(--vermillion-500);
+  color: white;
+}
+
+.stepper-step.completed .stepper-circle {
+  background: var(--verdigris-500);
+  color: white;
+}
+
+.stepper-label {
+  font-size: 0.7rem;
+  text-align: center;
+  color: var(--color-text-secondary, #6b7280);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.stepper-step.active .stepper-label {
+  color: var(--vermillion-500);
+  font-weight: 600;
+}
+
+.stepper-step.completed .stepper-label {
+  color: var(--verdigris-500);
+}
+
+/* ── Error ────────────────────────────────────────────────────── */
+
+.onboarding-error {
+  background: #fde8e3;
+  color: #9b3722;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+/* ── Step Card ────────────────────────────────────────────────── */
+
+.onboarding-content {
+  display: flex;
+  justify-content: center;
+}
+
+.step-card {
+  background: var(--color-surface, #ffffff);
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: 16px;
+  padding: 2.5rem;
+  width: 100%;
+  text-align: center;
+}
+
+.step-card h2 {
+  font-family: 'Cinzel', 'Times New Roman', serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-text, #1a1a2e);
+  margin: 0 0 0.75rem 0;
+}
+
+.step-card p {
+  color: var(--color-text-secondary, #6b7280);
+  margin: 0 0 1.5rem 0;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+/* ── Buttons ──────────────────────────────────────────────────── */
+
+.onboarding-btn {
+  padding: 0.65rem 1.5rem;
+  border-radius: 10px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.15s;
+  margin: 0 0.5rem;
+}
+
+.onboarding-btn.primary {
+  background: var(--vermillion-500);
+  color: white;
+  border-color: var(--vermillion-500);
+}
+
+.onboarding-btn.primary:hover {
+  background: var(--vermillion-600);
+}
+
+.onboarding-btn.secondary {
+  background: transparent;
+  color: var(--color-text-secondary, #6b7280);
+  border-color: var(--color-border, #e5e7eb);
+}
+
+.onboarding-btn.secondary:hover {
+  background: var(--color-background, #f9fafb);
+}
+
+/* ── Account Grid ─────────────────────────────────────────────── */
+
+.account-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.account-card {
+  background: var(--color-background, #f9fafb);
+  border: 2px solid var(--color-border, #e5e7eb);
+  border-radius: 12px;
+  padding: 1.25rem;
+  cursor: pointer;
+  transition: all 0.15s;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.account-card:hover {
+  border-color: var(--vermillion-500);
+}
+
+.account-card.selected {
+  border-color: var(--verdigris-500);
+  background: rgba(107, 155, 122, 0.06);
+}
+
+.account-card strong {
+  font-size: 0.95rem;
+  color: var(--color-text, #1a1a2e);
+}
+
+.account-card span {
+  font-size: 0.8rem;
+  color: var(--color-text-secondary, #6b7280);
+}
+
+/* ── Template Grid ────────────────────────────────────────────── */
+
+.template-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1rem;
+  text-align: left;
+  margin-bottom: 1.5rem;
+}
+
+.template-card {
+  background: var(--color-background, #f9fafb);
+  border: 2px solid var(--color-border, #e5e7eb);
+  border-radius: 12px;
+  padding: 1.25rem;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.template-card:hover {
+  border-color: var(--vermillion-500);
+}
+
+.template-card.selected {
+  border-color: var(--verdigris-500);
+  background: rgba(107, 155, 122, 0.06);
+}
+
+.template-card h3 {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-text, #1a1a2e);
+  margin: 0 0 0.25rem 0;
+}
+
+.template-vertical {
+  display: inline-block;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--vermillion-500);
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.template-card p {
+  font-size: 0.8rem;
+  color: var(--color-text-secondary, #6b7280);
+  margin: 0;
+  line-height: 1.4;
+}
+
+/* ── Config Summary ───────────────────────────────────────────── */
+
+.config-summary {
+  background: var(--color-background, #f9fafb);
+  border-radius: 12px;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+/* ── Sync Progress ────────────────────────────────────────────── */
+
+.sync-progress {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+  color: var(--color-text-secondary, #6b7280);
+}
+
+.sync-spinner {
+  width: 20px;
+  height: 20px;
+  border: 3px solid var(--color-border, #e5e7eb);
+  border-top-color: var(--vermillion-500);
+  border-radius: 50%;
+  animation: onboarding-spin 1s linear infinite;
+}
+
+@keyframes onboarding-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ── Empty State ──────────────────────────────────────────────── */
+
+.onboarding-empty {
+  padding: 1.5rem;
+  color: var(--color-text-secondary, #6b7280);
+}

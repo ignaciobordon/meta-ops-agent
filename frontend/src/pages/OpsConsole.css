@@ -1,0 +1,353 @@
+/* Sprint 7: Ops Console — Renaissance / Da Vinci Codex */
+
+.ops-console {
+  padding: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.ops-header {
+  margin-bottom: 2rem;
+}
+
+.ops-header h1 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  font-family: 'Cinzel', 'Times New Roman', serif;
+  color: var(--color-text, #1a1a2e);
+  margin: 0 0 0.25rem 0;
+}
+
+.ops-header p {
+  color: var(--color-text-secondary, #6b7280);
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+/* ── Queue Stats Row ─────────────────────────────────────────── */
+
+.ops-queues {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.queue-card {
+  background: var(--color-surface, #ffffff);
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: 12px;
+  padding: 1.25rem;
+}
+
+.queue-card h3 {
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-variant: small-caps;
+  color: var(--color-text-secondary, #6b7280);
+  margin: 0 0 0.75rem 0;
+}
+
+.queue-stats {
+  display: flex;
+  gap: 1.25rem;
+}
+
+.queue-stat {
+  text-align: center;
+}
+
+.queue-stat .stat-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  display: block;
+}
+
+.queue-stat .stat-label {
+  font-size: 0.75rem;
+  color: var(--color-text-secondary, #6b7280);
+  text-transform: uppercase;
+}
+
+.stat-pending { color: var(--goldleaf-500); }
+.stat-running { color: var(--verdigris-500); }
+.stat-failed { color: var(--vermillion-500); }
+
+/* ── Provider Health ─────────────────────────────────────────── */
+
+.ops-providers {
+  margin-bottom: 2rem;
+}
+
+.ops-section-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  font-family: 'Cinzel', 'Times New Roman', serif;
+  color: var(--color-text, #1a1a2e);
+  margin: 0 0 1rem 0;
+}
+
+.providers-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1rem;
+}
+
+.provider-card {
+  background: var(--color-surface, #ffffff);
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: 12px;
+  padding: 1.25rem;
+}
+
+.provider-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.provider-name {
+  font-weight: 600;
+  font-size: 1rem;
+  color: var(--color-text, #1a1a2e);
+}
+
+.circuit-badge {
+  padding: 0.2rem 0.6rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.circuit-closed { background: #e8f0e5; color: #3d6b42; }
+.circuit-half_open { background: #fdf3e0; color: #8a6914; }
+.circuit-open { background: #fde8e3; color: #9b3722; }
+
+.rate-limit-bar {
+  margin-top: 0.5rem;
+}
+
+.rate-limit-label {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8rem;
+  color: var(--color-text-secondary, #6b7280);
+  margin-bottom: 0.25rem;
+}
+
+.rate-limit-track {
+  height: 6px;
+  background: var(--color-border, #e5e7eb);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.rate-limit-fill {
+  height: 100%;
+  border-radius: 3px;
+  background: var(--verdigris-500);
+  transition: width 0.3s ease;
+}
+
+.rate-limit-fill.low { background: var(--vermillion-500); }
+.rate-limit-fill.medium { background: var(--goldleaf-500); }
+
+.provider-failure {
+  font-size: 0.8rem;
+  color: var(--color-text-secondary, #6b7280);
+  margin-top: 0.5rem;
+}
+
+/* ── Jobs Table ──────────────────────────────────────────────── */
+
+.ops-jobs {
+  margin-bottom: 2rem;
+}
+
+.ops-jobs-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.ops-filters {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.ops-filter-select {
+  padding: 0.4rem 0.75rem;
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: 8px;
+  font-size: 0.85rem;
+  color: var(--color-text, #1a1a2e);
+  background: var(--color-surface, #ffffff);
+}
+
+.jobs-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--color-surface, #ffffff);
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.jobs-table th {
+  text-align: left;
+  padding: 0.75rem 1rem;
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-variant: small-caps;
+  color: var(--color-text-secondary, #6b7280);
+  background: var(--color-background, #f9fafb);
+  border-bottom: 1px solid var(--color-border, #e5e7eb);
+}
+
+.jobs-table td {
+  padding: 0.65rem 1rem;
+  font-size: 0.9rem;
+  border-bottom: 1px solid var(--color-border-light, #f3f4f6);
+  color: var(--color-text, #1a1a2e);
+}
+
+.jobs-table tr:last-child td {
+  border-bottom: none;
+}
+
+.jobs-table tr:hover td {
+  background: var(--color-background, #f9fafb);
+}
+
+/* Status Badges */
+.status-badge {
+  display: inline-block;
+  padding: 0.15rem 0.5rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.status-queued { background: #e8ecf0; color: #4a5568; }
+.status-running { background: #fdf3e0; color: #8a6914; }
+.status-succeeded { background: #e8f0e5; color: #3d6b42; }
+.status-failed { background: #fde8e3; color: #9b3722; }
+.status-retry_scheduled { background: #fdf3e0; color: #8a6914; }
+.status-canceled { background: #e8ecf0; color: #4a5568; }
+.status-dead { background: #4a3728; color: #f5e6d8; }
+
+/* Action Buttons */
+.ops-btn {
+  padding: 0.3rem 0.6rem;
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: 6px;
+  font-size: 0.75rem;
+  cursor: pointer;
+  background: var(--color-surface, #ffffff);
+  color: var(--color-text, #1a1a2e);
+  transition: background 0.15s;
+}
+
+.ops-btn:hover {
+  background: var(--color-background, #f9fafb);
+}
+
+.ops-btn-retry {
+  color: var(--verdigris-500);
+  border-color: var(--verdigris-500);
+}
+
+.ops-btn-cancel {
+  color: var(--vermillion-500);
+  border-color: var(--vermillion-500);
+}
+
+.ops-btn-actions {
+  display: flex;
+  gap: 0.4rem;
+}
+
+/* ── Job Detail Modal ────────────────────────────────────────── */
+
+.ops-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.ops-modal {
+  background: var(--color-surface, #ffffff);
+  border-radius: 16px;
+  padding: 2rem;
+  max-width: 600px;
+  width: 90%;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.ops-modal h2 {
+  margin: 0 0 1.25rem 0;
+  font-size: 1.25rem;
+  color: var(--color-text, #1a1a2e);
+}
+
+.ops-modal-field {
+  margin-bottom: 0.75rem;
+}
+
+.ops-modal-field label {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--color-text-secondary, #6b7280);
+  margin-bottom: 0.15rem;
+  text-transform: uppercase;
+}
+
+.ops-modal-field span,
+.ops-modal-field pre {
+  font-size: 0.9rem;
+  color: var(--color-text, #1a1a2e);
+}
+
+.ops-modal-field pre {
+  background: var(--color-background, #f9fafb);
+  padding: 0.75rem;
+  border-radius: 8px;
+  overflow-x: auto;
+  font-size: 0.8rem;
+}
+
+.ops-modal-close {
+  margin-top: 1.25rem;
+  padding: 0.5rem 1.25rem;
+  border: 1px solid var(--color-border, #e5e7eb);
+  border-radius: 8px;
+  background: var(--color-surface, #ffffff);
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.ops-modal-close:hover {
+  background: var(--color-background, #f9fafb);
+}
+
+/* ── Loading / Empty States ──────────────────────────────────── */
+
+.ops-loading,
+.ops-empty {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: var(--color-text-secondary, #6b7280);
+}

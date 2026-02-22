@@ -23,6 +23,8 @@ from backend.src.database.models import (
     InsightLevel,
     Creative,
     ContentPack,
+    ContentPackStatus,
+    ContentVariant,
 )
 from backend.src.jobs.queue import enqueue
 from src.utils.logging_config import logger
@@ -43,7 +45,7 @@ FLYWHEEL_STEPS = [
 _JOB_STEPS = {"meta_sync", "unified_intelligence", "creatives", "content_studio"}
 
 # Maximum seconds to wait for a single job to complete
-_POLL_TIMEOUT = 360
+_POLL_TIMEOUT = 900
 _POLL_INTERVAL = 2
 
 
@@ -774,33 +776,84 @@ class FlywheelService:
             step.artifacts_json = {"reason": "No creatives available for content generation"}
             return
 
-        # Check if there's already a content pack for this creative
+        # ── Clean up broken packs (0 variants, channels_json=None) ──
+        broken_packs = (
+            self.db.query(ContentPack)
+            .filter(
+                ContentPack.creative_id == creative.id,
+                ContentPack.channels_json.is_(None),
+                ContentPack.status == ContentPackStatus.SUCCEEDED,
+            )
+            .all()
+        )
+        for bp in broken_packs:
+            self.db.delete(bp)
+        if broken_packs:
+            self.db.flush()
+            logger.info(
+                "FLYWHEEL_CLEANED_BROKEN_PACKS | run={} | deleted={}",
+                run.id, len(broken_packs),
+            )
+
+        # Check if there's already a valid content pack for this creative
         existing_pack = (
             self.db.query(ContentPack)
-            .filter(ContentPack.creative_id == creative.id)
+            .filter(
+                ContentPack.creative_id == creative.id,
+                ContentPack.status == ContentPackStatus.SUCCEEDED,
+            )
             .first()
         )
 
+        # Only reuse if it actually has variants
         if existing_pack:
-            step.artifacts_json = {
-                "content_pack_id": str(existing_pack.id),
-                "creative_id": str(creative.id),
-                "note": "Using existing content pack",
-            }
-            step.status = "succeeded"
-            return
+            variant_count = (
+                self.db.query(ContentVariant)
+                .filter(ContentVariant.content_pack_id == existing_pack.id)
+                .count()
+            )
+            if variant_count > 0:
+                step.artifacts_json = {
+                    "content_pack_id": str(existing_pack.id),
+                    "creative_id": str(creative.id),
+                    "note": f"Using existing content pack ({variant_count} variants)",
+                }
+                step.status = "succeeded"
+                return
 
         # Create and enqueue new pack
         from backend.src.services.content_creator_service import build_pack_from_creative
 
-        channels = (run.config_json or {}).get("channels", [
+        # Use `or` instead of .get() default to handle both missing key AND explicit None
+        channels = (run.config_json or {}).get("channels") or [
             {"channel": "ig_reel", "format": "9x16_30s"},
-        ])
+            {"channel": "ig_post", "format": "1x1"},
+            {"channel": "ig_carousel", "format": "carousel_10"},
+            {"channel": "ig_story", "format": "9x16_story"},
+            {"channel": "fb_feed", "format": "1x1"},
+            {"channel": "fb_ad_copy", "format": "ad_copy"},
+        ]
+
+        # ── Strategic goal diversity: derive from opportunity context ──
+        if top_opp:
+            opp_strategy = top_opp.get("strategy", "").lower()
+            opp_title = top_opp.get("title", "").lower()
+            opp_text = opp_strategy + " " + opp_title
+            if any(kw in opp_text for kw in ["lead", "captar", "lista", "formulario"]):
+                goal = "leads"
+            elif any(kw in opp_text for kw in ["venta", "sale", "compra", "revenue", "monetiz", "price", "premium"]):
+                goal = "sales"
+            elif any(kw in opp_text for kw in ["retenci", "retent", "fideliz", "churn"]):
+                goal = "retention"
+            else:
+                goal = (run.config_json or {}).get("goal") or "awareness"
+        else:
+            goal = (run.config_json or {}).get("goal") or "awareness"
 
         # Pass opportunity context into settings so it flows into the content generation prompt
         settings = {
-            "goal": (run.config_json or {}).get("goal", "awareness"),
-            "language": (run.config_json or {}).get("language", "es-AR"),
+            "goal": goal,
+            "language": (run.config_json or {}).get("language") or "es-AR",
         }
         if top_opp:
             settings["opportunity"] = {

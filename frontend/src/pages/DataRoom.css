@@ -1,0 +1,207 @@
+.dataroom-config-card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-xl);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+}
+
+.dataroom-section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.dataroom-section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.dataroom-section-title {
+  font-size: 13px;
+  font-weight: 600;
+  font-family: 'Cinzel', 'Times New Roman', serif;
+  color: var(--color-text-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 0;
+}
+
+.dataroom-toggle-all {
+  font-size: 12px;
+  color: var(--color-terracotta);
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-weight: 500;
+  padding: 0;
+}
+
+.dataroom-toggle-all:hover {
+  text-decoration: underline;
+}
+
+.dataroom-date-row {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.dataroom-date-separator {
+  font-size: 13px;
+  color: var(--color-text-muted);
+}
+
+.dataroom-input {
+  padding: 8px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md, 6px);
+  font-size: 13px;
+  background: var(--color-background);
+  color: var(--color-text-primary);
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.dataroom-input:focus {
+  border-color: var(--color-terracotta);
+}
+
+.dataroom-input-narrow {
+  width: 120px;
+}
+
+.dataroom-datasets-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: var(--spacing-xs) var(--spacing-md);
+}
+
+.dataroom-checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: var(--color-text-primary);
+  cursor: pointer;
+  padding: 4px 0;
+  user-select: none;
+}
+
+.dataroom-checkbox {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.dataroom-checkbox-checked {
+  color: var(--color-terracotta);
+}
+
+.dataroom-checkbox-unchecked {
+  color: var(--color-text-muted);
+}
+
+.dataroom-filters-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-md);
+}
+
+.dataroom-filter-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 140px;
+}
+
+.dataroom-filter-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.dataroom-select {
+  padding: 8px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md, 6px);
+  font-size: 13px;
+  background: var(--color-background);
+  color: var(--color-text-primary);
+  outline: none;
+  transition: border-color 0.2s;
+  cursor: pointer;
+}
+
+.dataroom-select:focus {
+  border-color: var(--color-terracotta);
+}
+
+/* Exports Table */
+.dataroom-exports-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.dataroom-exports-table th,
+.dataroom-exports-table td {
+  text-align: left;
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--color-border);
+  font-size: 13px;
+}
+
+.dataroom-exports-table th {
+  font-weight: 600;
+  color: var(--color-text-muted);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-variant: small-caps;
+}
+
+.dataroom-exports-table tbody tr:hover {
+  background: rgba(201, 168, 76, 0.06);
+}
+
+.dataroom-export-status {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 12px;
+  font-weight: 500;
+}
+
+.dataroom-export-status.status-succeeded {
+  background: var(--olive-100, #e8ecd8);
+  color: var(--olive-700, #5c6b3a);
+}
+
+.dataroom-export-status.status-failed {
+  background: var(--terracotta-100, #f8e4d8);
+  color: var(--terracotta-700, #804030);
+}
+
+.dataroom-export-status.status-running,
+.dataroom-export-status.status-pending,
+.dataroom-export-status.status-queued {
+  background: var(--gold-100, #f5efc8);
+  color: var(--gold-700, #6b5a1e);
+}
+
+.dataroom-download-btn {
+  font-size: 12px;
+  padding: 4px 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.dataroom-error-text {
+  font-size: 12px;
+  color: var(--terracotta-600, #a0533a);
+}

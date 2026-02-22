@@ -1,0 +1,129 @@
+.decision-queue {
+  max-width: 1200px;
+}
+
+.queue-header {
+  margin-bottom: var(--spacing-2xl);
+}
+
+.queue-header h1 {
+  font-size: 36px;
+  margin-bottom: var(--spacing-lg);
+}
+
+.state-filters {
+  display: flex;
+  gap: var(--spacing-sm);
+  flex-wrap: wrap;
+}
+
+.filter-btn {
+  padding: 8px 16px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  font-size: 14px;
+  font-weight: 500;
+  text-transform: capitalize;
+  transition: all 0.2s;
+}
+
+.filter-btn:hover {
+  background: var(--color-background);
+}
+
+.filter-btn.active {
+  background: var(--vermillion-500);
+  color: white;
+  border-color: var(--vermillion-500);
+}
+
+.decision-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+}
+
+.decision-card {
+  padding: var(--spacing-xl);
+}
+
+.decision-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-md);
+}
+
+.decision-id {
+  font-size: 12px;
+  color: var(--color-text-muted);
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.decision-title {
+  font-size: 20px;
+  font-family: 'Cinzel', 'Times New Roman', serif;
+  margin-bottom: var(--spacing-lg);
+  text-transform: capitalize;
+}
+
+.decision-details {
+  margin-bottom: var(--spacing-lg);
+}
+
+.detail-row {
+  display: flex;
+  padding: var(--spacing-sm) 0;
+  border-bottom: 1px solid var(--color-background);
+}
+
+.detail-row .label {
+  font-weight: 600;
+  width: 120px;
+  flex-shrink: 0;
+}
+
+.policy-checks {
+  margin-bottom: var(--spacing-lg);
+  padding: var(--spacing-md);
+  background: var(--color-background);
+  border-radius: var(--radius-lg);
+}
+
+.policy-checks h4 {
+  font-size: 14px;
+  margin-bottom: var(--spacing-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-variant: small-caps;
+}
+
+.policy-check {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm);
+  font-size: 14px;
+}
+
+.policy-check.pass {
+  color: var(--color-olive);
+}
+
+.policy-check.fail {
+  color: var(--color-error);
+}
+
+.decision-actions {
+  display: flex;
+  gap: var(--spacing-md);
+  flex-wrap: wrap;
+}
+
+.decision-actions .btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
