@@ -1742,7 +1742,7 @@ def capture_creative_outcomes(
         insights = db.query(MetaInsightsDaily).filter(
             MetaInsightsDaily.org_id == org_uuid,
             MetaInsightsDaily.entity_meta_id == creative.meta_ad_id,
-            MetaInsightsDaily.level == InsightLevel.ad,
+            MetaInsightsDaily.level == InsightLevel.AD,
             MetaInsightsDaily.date_start >= since,
         ).order_by(MetaInsightsDaily.date_start).all()
 
@@ -1787,30 +1787,30 @@ def capture_creative_outcomes(
 
             feature = db.query(FeatureMemory).filter(
                 FeatureMemory.org_id == org_uuid,
-                FeatureMemory.feature_type == FeatureType.angle,
+                FeatureMemory.feature_type == FeatureType.TAG,
                 FeatureMemory.feature_key == tag_key,
             ).first()
 
             if not feature:
                 feature = FeatureMemory(
                     org_id=org_uuid,
-                    feature_type=FeatureType.angle,
+                    feature_type=FeatureType.TAG,
                     feature_key=tag_key,
                     win_rate=0.0,
-                    sample_count=0,
+                    samples=0,
                     avg_delta_json={},
                 )
                 db.add(feature)
                 db.flush()
 
             # Update win rate with rolling average
-            old_count = feature.sample_count or 0
+            old_count = feature.samples or 0
             new_count = old_count + 1
             is_win = 1.0 if label == "win" else 0.0
             feature.win_rate = round(
                 (feature.win_rate * old_count + is_win) / new_count, 4
             )
-            feature.sample_count = new_count
+            feature.samples = new_count
             feature.avg_delta_json = {
                 **(feature.avg_delta_json or {}),
                 "last_ctr_delta": round(ctr_delta, 4),
