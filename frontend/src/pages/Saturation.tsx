@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { TrendingUp, AlertTriangle, CheckCircle, TrendingDown, Upload, ChevronDown, ChevronUp, FileDown, Loader, Database } from 'lucide-react';
 import { saturationApi, SaturationMetric } from '../services/api';
+import { downloadBlob } from '../utils/download';
 import './Saturation.css';
 
 export default function Saturation() {
@@ -93,16 +94,8 @@ export default function Saturation() {
       setDownloadingReport(metric.angle_id);
       setReportError(null);
       const res = await saturationApi.downloadReport(metric);
-      const blob = new Blob([res.data], { type: 'application/pdf' });
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
       const safeName = metric.angle_name.replace(/\s+/g, '_').substring(0, 40);
-      link.download = `saturation_report_${safeName}.pdf`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
+      downloadBlob(res.data, `saturation_report_${safeName}.pdf`, 'application/pdf');
     } catch (err: any) {
       console.error('Failed to download report:', err);
       setReportError(`Failed to generate report for "${metric.angle_name}". Please try again.`);

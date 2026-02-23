@@ -3,6 +3,7 @@ import { Database, FileDown, Loader2, Download, CheckSquare, Square } from 'luci
 import { useLanguage } from '../contexts/LanguageContext';
 import { dataRoomApi, DataExportResponse } from '../services/api';
 import { useJobPolling } from '../hooks/useJobPolling';
+import { downloadBlob } from '../utils/download';
 import './DataRoom.css';
 
 interface DatasetOption {
@@ -125,17 +126,7 @@ export default function DataRoom() {
   const handleDownload = async (exportId: string) => {
     try {
       const res = await dataRoomApi.downloadExport(exportId);
-      const blob = new Blob([res.data], {
-        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-      });
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `data_room_export_${exportId}.xlsx`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
+      downloadBlob(res.data, `data_room_export_${exportId}.xlsx`, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
     } catch (err) {
       console.error('Failed to download export:', err);
     }

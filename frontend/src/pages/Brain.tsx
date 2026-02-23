@@ -3,41 +3,14 @@ import { useNavigate } from 'react-router-dom';
 import { FileDown, TrendingUp, Pause, RefreshCw, Zap, Target, ChevronDown, ChevronUp, ArrowRight, Loader2 } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { brainApi, BrainStats, BrainSummary, BrainSuggestion, EntityTrust, RecentOutcome, FlywheelRecommendation } from '../services/api';
+import { fmt$, fmtN, trendArrow, trendClass, DATE_PRESETS } from '../utils/formatting';
+import { downloadBlob } from '../utils/download';
 import './Brain.css';
-
-function fmt$(v: number, decimals?: number) {
-  if (v >= 1_000_000) return `$${(v / 1_000_000).toFixed(1)}M`;
-  if (v >= 1_000) return `$${(v / 1_000).toFixed(1)}K`;
-  const d = decimals ?? (v < 10 ? 2 : 0);
-  return `$${v.toFixed(d)}`;
-}
-
-function fmtN(v: number) {
-  if (v >= 1_000_000) return `${(v / 1_000_000).toFixed(1)}M`;
-  if (v >= 1_000) return `${(v / 1_000).toFixed(1)}K`;
-  return v.toLocaleString();
-}
 
 function outcomeIcon(label: string) {
   if (label === 'win') return '\u25B2';
   if (label === 'loss') return '\u25BC';
   return '\u25CF';
-}
-
-function trendArrow(val: number | null) {
-  if (val === null || val === undefined) return '';
-  if (val > 0) return `+${val}%`;
-  if (val < 0) return `${val}%`;
-  return '0%';
-}
-
-function trendClass(val: number | null, invert?: boolean) {
-  if (val === null || val === undefined) return '';
-  const positive = invert ? val < 0 : val > 0;
-  const negative = invert ? val > 0 : val < 0;
-  if (positive) return 'trend-up';
-  if (negative) return 'trend-down';
-  return '';
 }
 
 function suggestion(trust: EntityTrust): string {
@@ -80,14 +53,7 @@ function renderAnalysisText(text: string) {
   });
 }
 
-const PRESETS = [
-  { label: '7d', days: 7 },
-  { label: '14d', days: 14 },
-  { label: '30d', days: 30 },
-  { label: '90d', days: 90 },
-  { label: '365d', days: 365 },
-  { label: 'All', days: 730 },
-];
+const PRESETS = DATE_PRESETS;
 
 export default function Brain() {
   const { t } = useLanguage();
@@ -186,15 +152,7 @@ export default function Brain() {
       setExportingPdf(true);
       const p = getDateParams();
       const res = await brainApi.exportPdf(p.days, p.since, p.until);
-      const blob = new Blob([res.data], { type: 'application/pdf' });
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = 'brain_report.pdf';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
+      downloadBlob(res.data, 'brain_report.pdf', 'application/pdf');
     } catch (err) {
       console.error('Failed to export PDF:', err);
     } finally {
@@ -207,15 +165,7 @@ export default function Brain() {
       setExportingXlsx(true);
       const p = getDateParams();
       const res = await brainApi.exportXlsx(p.days, p.since, p.until);
-      const blob = new Blob([res.data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = 'brain_report.xlsx';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
+      downloadBlob(res.data, 'brain_report.xlsx', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
     } catch (err) {
       console.error('Failed to export XLSX:', err);
     } finally {
@@ -242,15 +192,7 @@ export default function Brain() {
       setExportingEntityPdf(idx);
       const p = getDateParams();
       const res = await brainApi.exportEntityPdf(entity.entity_id, p.days, p.since, p.until);
-      const blob = new Blob([res.data], { type: 'application/pdf' });
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `brain_${entity.entity_id.replace(/\s+/g, '_').substring(0, 20)}.pdf`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
+      downloadBlob(res.data, `brain_${entity.entity_id.replace(/\s+/g, '_').substring(0, 20)}.pdf`, 'application/pdf');
     } catch (err) {
       console.error('Failed to export entity PDF:', err);
     } finally {

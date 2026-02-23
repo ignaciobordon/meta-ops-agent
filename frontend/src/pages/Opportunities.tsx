@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Lightbulb, Target, ArrowRight, Loader, RefreshCw, Sparkles, FileDown, User } from 'lucide-react';
 import { opportunitiesApi, brandMapApi, BrandMapProfile, Opportunity } from '../services/api';
 import { useJobPolling } from '../hooks/useJobPolling';
+import { downloadBlob } from '../utils/download';
 import './Opportunities.css';
 
 export default function Opportunities() {
@@ -68,15 +69,7 @@ export default function Opportunities() {
     try {
       setExportingPdf(true);
       const res = await opportunitiesApi.exportPdf();
-      const blob = new Blob([res.data], { type: 'application/pdf' });
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `opportunities_report.pdf`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
+      downloadBlob(res.data, 'opportunities_report.pdf', 'application/pdf');
     } catch (err) {
       console.error('Failed to export PDF:', err);
     } finally {
