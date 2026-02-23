@@ -24,8 +24,13 @@ RUN pip install --no-cache-dir -r requirements.txt
 # Copy application code
 COPY . .
 
-# Create logs directory
-RUN mkdir -p /app/logs
+# Create logs and exports directories
+RUN mkdir -p /app/logs /app/exports
+
+# Create non-root user for security
+RUN addgroup --system appuser && adduser --system --ingroup appuser appuser
+RUN chown -R appuser:appuser /app
+USER appuser
 
 # ── API server ───────────────────────────────────────────────────────────────
 FROM base AS api

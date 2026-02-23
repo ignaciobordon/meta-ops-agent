@@ -105,6 +105,12 @@ class Settings(BaseSettings):
     # ── Meta Ad Library ────────────────────────────────────────────────────
     META_AD_LIBRARY_ACCESS_TOKEN: str = ""  # Graph API token for Ad Library (ads_read permission)
 
+    # ── Proxy ─────────────────────────────────────────────────────────────
+    TRUSTED_PROXY_DEPTH: int = 0  # 0 = ignore X-Forwarded-For (direct connection)
+
+    # ── Data Room ─────────────────────────────────────────────────────────
+    DATA_ROOM_EXPORT_DIR: str = "./exports"
+
     # ── Logging ────────────────────────────────────────────────────────────
     LOG_LEVEL: str = "INFO"
 
@@ -166,3 +172,17 @@ if not settings.LLM_DEFAULT_PROVIDER:
 # Validate on import if in production
 if settings.ENVIRONMENT == "production":
     settings.validate_production_secrets()
+
+# Warn about insecure defaults in any environment
+if settings.JWT_SECRET == "dev-secret-change-in-production":
+    import warnings
+    warnings.warn(
+        "JWT_SECRET is using insecure default. Set JWT_SECRET env var.",
+        stacklevel=1,
+    )
+if settings.PASSWORD_SALT == "meta-ops-salt-v1":
+    import warnings
+    warnings.warn(
+        "PASSWORD_SALT is using insecure default. Set PASSWORD_SALT env var.",
+        stacklevel=1,
+    )

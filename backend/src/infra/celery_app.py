@@ -56,8 +56,7 @@ try:
 
     @worker_ready.connect
     def _log_worker_ready(sender=None, **kwargs):
-        import logging
-        log = logging.getLogger("meta_ops_worker")
+        from src.utils.logging_config import logger as log
         log.info(
             "WORKER_READY | default_provider=%s | fallback_provider=%s | "
             "anthropic_key=%s | openai_key=%s | redis=%s",

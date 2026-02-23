@@ -1,14 +1,30 @@
 version: '3.9'
 
+# Shared environment variables for all backend services
+x-common-env: &common-env
+  DATABASE_URL: postgresql://meta_ops:${POSTGRES_PASSWORD}@postgres:5432/meta_ops
+  CHROMA_PERSIST_DIRECTORY: /app/chroma_data
+  REDIS_URL: redis://redis:6379/0
+  ENVIRONMENT: ${ENVIRONMENT:-development}
+  JWT_SECRET: ${JWT_SECRET}
+  ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+  OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+  LLM_DEFAULT_PROVIDER: ${LLM_DEFAULT_PROVIDER:-}
+  LLM_FALLBACK_PROVIDER: ${LLM_FALLBACK_PROVIDER:-}
+  LLM_TIMEOUT_SECONDS: ${LLM_TIMEOUT_SECONDS:-30}
+  META_APP_ID: ${META_APP_ID:-}
+  META_APP_SECRET: ${META_APP_SECRET:-}
+  META_TOKEN_ENCRYPTION_KEY: ${META_TOKEN_ENCRYPTION_KEY:-}
+
 services:
   postgres:
     image: postgres:16-alpine
     environment:
       POSTGRES_DB: meta_ops
       POSTGRES_USER: meta_ops
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-dev-password}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     ports:
-      - "5432:5432"
+      - "127.0.0.1:5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
@@ -27,7 +43,7 @@ services:
       - PERSIST_DIRECTORY=/chroma/chroma
       - ANONYMIZED_TELEMETRY=FALSE
     ports:
-      - "8100:8000"
+      - "127.0.0.1:8100:8000"
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/heartbeat"]
       interval: 30s
@@ -38,7 +54,7 @@ services:
   redis:
     image: redis:7-alpine
     ports:
-      - "6379:6379"
+      - "127.0.0.1:6379:6379"
     volumes:
       - redisdata:/data
     healthcheck:
@@ -53,19 +69,7 @@ services:
     ports:
       - "8000:8000"
     environment:
-      DATABASE_URL: postgresql://meta_ops:${POSTGRES_PASSWORD:-dev-password}@postgres:5432/meta_ops
-      CHROMA_PERSIST_DIRECTORY: /app/chroma_data
-      REDIS_URL: redis://redis:6379/0
-      ENVIRONMENT: ${ENVIRONMENT:-development}
-      JWT_SECRET: ${JWT_SECRET:-dev-secret-change-in-production}
-      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
-      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
-      LLM_DEFAULT_PROVIDER: ${LLM_DEFAULT_PROVIDER:-}
-      LLM_FALLBACK_PROVIDER: ${LLM_FALLBACK_PROVIDER:-}
-      LLM_TIMEOUT_SECONDS: ${LLM_TIMEOUT_SECONDS:-30}
-      META_APP_ID: ${META_APP_ID:-}
-      META_APP_SECRET: ${META_APP_SECRET:-}
-      META_TOKEN_ENCRYPTION_KEY: ${META_TOKEN_ENCRYPTION_KEY:-}
+      <<: *common-env
     depends_on:
       postgres:
         condition: service_healthy
@@ -79,19 +83,7 @@ services:
     build: .
     command: celery -A backend.src.infra.celery_app worker --queues=default --concurrency=2 --loglevel=info
     environment:
-      DATABASE_URL: postgresql://meta_ops:${POSTGRES_PASSWORD:-dev-password}@postgres:5432/meta_ops
-      CHROMA_PERSIST_DIRECTORY: /app/chroma_data
-      REDIS_URL: redis://redis:6379/0
-      ENVIRONMENT: ${ENVIRONMENT:-development}
-      JWT_SECRET: ${JWT_SECRET:-dev-secret-change-in-production}
-      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
-      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
-      LLM_DEFAULT_PROVIDER: ${LLM_DEFAULT_PROVIDER:-}
-      LLM_FALLBACK_PROVIDER: ${LLM_FALLBACK_PROVIDER:-}
-      LLM_TIMEOUT_SECONDS: ${LLM_TIMEOUT_SECONDS:-30}
-      META_APP_ID: ${META_APP_ID:-}
-      META_APP_SECRET: ${META_APP_SECRET:-}
-      META_TOKEN_ENCRYPTION_KEY: ${META_TOKEN_ENCRYPTION_KEY:-}
+      <<: *common-env
     depends_on:
       redis:
         condition: service_healthy
@@ -103,19 +95,7 @@ services:
     build: .
     command: celery -A backend.src.infra.celery_app worker --queues=io --concurrency=4 --loglevel=info
     environment:
-      DATABASE_URL: postgresql://meta_ops:${POSTGRES_PASSWORD:-dev-password}@postgres:5432/meta_ops
-      CHROMA_PERSIST_DIRECTORY: /app/chroma_data
-      REDIS_URL: redis://redis:6379/0
-      ENVIRONMENT: ${ENVIRONMENT:-development}
-      JWT_SECRET: ${JWT_SECRET:-dev-secret-change-in-production}
-      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
-      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
-      LLM_DEFAULT_PROVIDER: ${LLM_DEFAULT_PROVIDER:-}
-      LLM_FALLBACK_PROVIDER: ${LLM_FALLBACK_PROVIDER:-}
-      LLM_TIMEOUT_SECONDS: ${LLM_TIMEOUT_SECONDS:-30}
-      META_APP_ID: ${META_APP_ID:-}
-      META_APP_SECRET: ${META_APP_SECRET:-}
-      META_TOKEN_ENCRYPTION_KEY: ${META_TOKEN_ENCRYPTION_KEY:-}
+      <<: *common-env
     depends_on:
       redis:
         condition: service_healthy
@@ -127,16 +107,7 @@ services:
     build: .
     command: celery -A backend.src.infra.celery_app worker --queues=llm --concurrency=1 --loglevel=info
     environment:
-      DATABASE_URL: postgresql://meta_ops:${POSTGRES_PASSWORD:-dev-password}@postgres:5432/meta_ops
-      CHROMA_PERSIST_DIRECTORY: /app/chroma_data
-      REDIS_URL: redis://redis:6379/0
-      ENVIRONMENT: ${ENVIRONMENT:-development}
-      JWT_SECRET: ${JWT_SECRET:-dev-secret-change-in-production}
-      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
-      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
-      LLM_DEFAULT_PROVIDER: ${LLM_DEFAULT_PROVIDER:-}
-      LLM_FALLBACK_PROVIDER: ${LLM_FALLBACK_PROVIDER:-}
-      LLM_TIMEOUT_SECONDS: ${LLM_TIMEOUT_SECONDS:-30}
+      <<: *common-env
     depends_on:
       redis:
         condition: service_healthy

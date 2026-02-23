@@ -197,9 +197,13 @@ async def upload_and_analyze(file: UploadFile = File(...)):
     if not file.filename.endswith(".csv"):
         raise HTTPException(400, "File must be a CSV file")
 
+    MAX_CSV_BYTES = 10 * 1024 * 1024  # 10 MB
+
     try:
         # Save uploaded file to temp location
         content = await file.read()
+        if len(content) > MAX_CSV_BYTES:
+            raise HTTPException(413, "CSV file too large. Maximum size is 10 MB.")
         with tempfile.NamedTemporaryFile(mode='wb', suffix='.csv', delete=False) as tmp:
             tmp.write(content)
             tmp_path = tmp.name

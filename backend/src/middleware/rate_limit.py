@@ -150,12 +150,9 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
             key_hash = hashlib.sha256(api_key.encode()).hexdigest()[:16]
             return f"key:{key_hash}"
 
-        # Priority 3: Client IP address
-        forwarded_for = request.headers.get("X-Forwarded-For")
-        if forwarded_for:
-            client_ip = forwarded_for.split(",")[0].strip()
-        else:
-            client_ip = request.client.host if request.client else "unknown"
+        # Priority 3: Client IP address (respects TRUSTED_PROXY_DEPTH)
+        from backend.src.utils.auth_events import extract_client_ip
+        client_ip = extract_client_ip(request)
 
         return f"ip:{client_ip}"
 

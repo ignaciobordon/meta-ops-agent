@@ -3,7 +3,6 @@ Sprint 6 – BLOQUE H: Meta Sync API Endpoints
 /api/meta/sync/* — sync control + data + intelligence endpoints.
 """
 from datetime import datetime, timedelta
-import logging
 from typing import Any, Dict, List, Optional
 from uuid import UUID
 
@@ -28,8 +27,7 @@ from backend.src.database.models import (
 )
 from backend.src.database.session import get_db
 from backend.src.middleware.auth import get_current_user, require_admin
-
-logger = logging.getLogger(__name__)
+from src.utils.logging_config import logger
 
 router = APIRouter()
 

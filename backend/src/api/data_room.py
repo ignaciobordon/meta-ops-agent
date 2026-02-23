@@ -217,8 +217,15 @@ def download_export(
     if not export.file_path:
         raise HTTPException(404, "Export file not available")
 
+    import pathlib
+    from backend.src.config import settings
+    export_base = pathlib.Path(settings.DATA_ROOM_EXPORT_DIR).resolve()
+    safe_path = pathlib.Path(export.file_path).resolve()
+    if not str(safe_path).startswith(str(export_base)):
+        raise HTTPException(403, "Invalid export path")
+
     try:
-        with open(export.file_path, "rb") as f:
+        with open(safe_path, "rb") as f:
             file_bytes = f.read()
     except FileNotFoundError:
         raise HTTPException(404, "Export file not found on disk")

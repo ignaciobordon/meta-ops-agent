@@ -23,7 +23,7 @@ from backend.src.database.models import (
     MetaInsightsDaily,
     OutcomeLabel,
 )
-from loguru import logger
+from src.utils.logging_config import logger
 
 from backend.src.database.session import get_db
 from backend.src.middleware.auth import get_current_user
