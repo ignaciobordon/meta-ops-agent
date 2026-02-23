@@ -1,6 +1,7 @@
 """Analytics API: metrics-over-time, insights, enriched summary & campaigns."""
 from typing import Optional
 from datetime import datetime
+from uuid import UUID
 import io
 
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -28,7 +29,6 @@ def get_performance_summary(
     if not org_id:
         raise HTTPException(400, "No organization")
 
-    from uuid import UUID
     acc_id = UUID(ad_account_id) if ad_account_id else None
     return analytics_service.get_performance_summary(db, UUID(org_id), days, since, until, acc_id)
 
@@ -47,7 +47,6 @@ def get_metrics_over_time(
     if not org_id:
         raise HTTPException(400, "No organization")
 
-    from uuid import UUID
     acc_id = UUID(ad_account_id) if ad_account_id else None
     return analytics_service.get_metrics_over_time(db, UUID(org_id), days, since, until, acc_id)
 
@@ -66,7 +65,6 @@ def get_insights(
     if not org_id:
         raise HTTPException(400, "No organization")
 
-    from uuid import UUID
     acc_id = UUID(ad_account_id) if ad_account_id else None
     return {"insights": analytics_service.generate_insights(db, UUID(org_id), days, since, until, acc_id)}
 
@@ -85,7 +83,6 @@ def get_spend_over_time(
     if not org_id:
         raise HTTPException(400, "No organization")
 
-    from uuid import UUID
     acc_id = UUID(ad_account_id) if ad_account_id else None
     return analytics_service.get_spend_over_time(db, UUID(org_id), days, since, until, acc_id)
 
@@ -105,7 +102,6 @@ def get_top_campaigns(
     if not org_id:
         raise HTTPException(400, "No organization")
 
-    from uuid import UUID
     acc_id = UUID(ad_account_id) if ad_account_id else None
     return analytics_service.get_top_campaigns(db, UUID(org_id), days, limit, since, until, acc_id)
 
@@ -124,7 +120,6 @@ def get_daily_breakdown(
     if not org_id:
         raise HTTPException(400, "No organization")
 
-    from uuid import UUID
     acc_id = UUID(ad_account_id) if ad_account_id else None
     return analytics_service.get_daily_breakdown(db, UUID(org_id), days, since, until, acc_id)
 
@@ -139,7 +134,6 @@ def get_benchmarks(
     if not org_id:
         raise HTTPException(400, "No organization")
 
-    from uuid import UUID
     return benchmark_service.get_benchmarks(db, UUID(org_id))
 
 
@@ -367,7 +361,6 @@ def export_analytics_pdf(
     if not org_id:
         raise HTTPException(400, "No organization")
 
-    from uuid import UUID
     org_uuid = UUID(org_id)
     acc_id = UUID(ad_account_id) if ad_account_id else None
 
@@ -408,7 +401,6 @@ def export_analytics_xlsx(
     if not org_id:
         raise HTTPException(400, "No organization")
 
-    from uuid import UUID
     org_uuid = UUID(org_id)
     acc_id = UUID(ad_account_id) if ad_account_id else None
 

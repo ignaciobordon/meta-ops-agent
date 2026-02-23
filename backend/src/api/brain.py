@@ -27,47 +27,17 @@ from src.utils.logging_config import logger
 
 from backend.src.database.session import get_db
 from backend.src.middleware.auth import get_current_user
+from backend.src.utils.meta_helpers import OBJECTIVE_LABELS, parse_date_range
 
 router = APIRouter()
 
 # ── Human-readable objective names ────────────────────────────────────────────
 
-_OBJECTIVE_LABELS = {
-    "OUTCOME_LEADS": "Leads",
-    "OUTCOME_ENGAGEMENT": "Engagement",
-    "OUTCOME_AWARENESS": "Awareness",
-    "OUTCOME_TRAFFIC": "Traffic",
-    "OUTCOME_SALES": "Sales",
-    "OUTCOME_APP_PROMOTION": "App Promotion",
-    "CONVERSIONS": "Conversions",
-    "LINK_CLICKS": "Link Clicks",
-    "REACH": "Reach",
-    "BRAND_AWARENESS": "Brand Awareness",
-    "POST_ENGAGEMENT": "Post Engagement",
-    "VIDEO_VIEWS": "Video Views",
-    "MESSAGES": "Messages",
-    "STORE_VISITS": "Store Visits",
-}
-
 
 def _clean_objective(raw: str) -> str:
-    if raw in _OBJECTIVE_LABELS:
-        return _OBJECTIVE_LABELS[raw]
+    if raw in OBJECTIVE_LABELS:
+        return OBJECTIVE_LABELS[raw]
     return raw.replace("OUTCOME_", "").replace("_", " ").title()
-
-
-def _parse_dates(days: int, since: Optional[str], until: Optional[str]):
-    """Parse date range from days offset or explicit since/until."""
-    if since:
-        since_dt = datetime.strptime(since, "%Y-%m-%d")
-    else:
-        since_dt = datetime.utcnow() - timedelta(days=days)
-
-    until_dt = None
-    if until:
-        until_dt = datetime.strptime(until, "%Y-%m-%d") + timedelta(days=1)
-
-    return since_dt, until_dt
 
 
 # ── Schemas ───────────────────────────────────────────────────────────────────
@@ -544,7 +514,7 @@ def get_brain_stats(
     except (ValueError, AttributeError):
         raise HTTPException(status_code=400, detail="Invalid organization context")
 
-    since_dt, until_dt = _parse_dates(days, since, until)
+    since_dt, until_dt = parse_date_range(days, since, until)
 
     # Try learning tables first
     features = db.query(FeatureMemory).filter(
@@ -667,7 +637,7 @@ def get_brain_suggestions(
     except (ValueError, AttributeError):
         raise HTTPException(400, "Invalid organization context")
 
-    since_dt, until_dt = _parse_dates(days, since, until)
+    since_dt, until_dt = parse_date_range(days, since, until)
     entity_trust = _derive_entity_trust(db, org_uuid, since_dt, until_dt)
     top_features = _derive_top_features(db, org_uuid, since_dt, until_dt)
 
@@ -1033,7 +1003,7 @@ def get_entity_analysis(
     except (ValueError, AttributeError):
         raise HTTPException(400, "Invalid organization context")
 
-    since_dt, until_dt = _parse_dates(days, since, until)
+    since_dt, until_dt = parse_date_range(days, since, until)
     entities = _derive_entity_trust(db, org_uuid, since_dt, until_dt)
 
     target = None
@@ -1095,7 +1065,7 @@ def get_feature_analysis(
     except (ValueError, AttributeError):
         raise HTTPException(400, "Invalid organization context")
 
-    since_dt, until_dt = _parse_dates(days, since, until)
+    since_dt, until_dt = parse_date_range(days, since, until)
 
     # Try derived features first
     features = _derive_top_features(db, org_uuid, since_dt, until_dt)
@@ -1156,7 +1126,7 @@ def get_outcome_analysis(
     except (ValueError, AttributeError):
         raise HTTPException(400, "Invalid organization context")
 
-    since_dt, until_dt = _parse_dates(days, since, until)
+    since_dt, until_dt = parse_date_range(days, since, until)
 
     # Try learning tables first (same source as get_brain_stats)
     db_outcomes = db.query(DecisionOutcome).filter(
@@ -1215,7 +1185,7 @@ def get_flywheel_recommendations(
     except (ValueError, AttributeError):
         raise HTTPException(400, "Invalid organization context")
 
-    since_dt, until_dt = _parse_dates(days, since, until)
+    since_dt, until_dt = parse_date_range(days, since, until)
     entity_trust = _derive_entity_trust(db, org_uuid, since_dt, until_dt)
     top_features = _derive_top_features(db, org_uuid, since_dt, until_dt)
     summary = _compute_summary(db, org_uuid, since_dt, until_dt, days)
@@ -1240,7 +1210,7 @@ def export_entity_pdf(
     except (ValueError, AttributeError):
         raise HTTPException(400, "Invalid organization context")
 
-    since_dt, until_dt = _parse_dates(days, since, until)
+    since_dt, until_dt = parse_date_range(days, since, until)
     entities = _derive_entity_trust(db, org_uuid, since_dt, until_dt)
 
     target = None
@@ -1616,7 +1586,7 @@ def export_brain_pdf(
     except (ValueError, AttributeError):
         raise HTTPException(400, "Invalid organization context")
 
-    since_dt, until_dt = _parse_dates(days, since, until)
+    since_dt, until_dt = parse_date_range(days, since, until)
 
     try:
         summary = _compute_summary(db, org_uuid, since_dt, until_dt, days)
@@ -1667,7 +1637,7 @@ def export_brain_xlsx(
     except (ValueError, AttributeError):
         raise HTTPException(400, "Invalid organization context")
 
-    since_dt, until_dt = _parse_dates(days, since, until)
+    since_dt, until_dt = parse_date_range(days, since, until)
 
     try:
         summary = _compute_summary(db, org_uuid, since_dt, until_dt, days)

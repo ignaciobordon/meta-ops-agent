@@ -1,6 +1,7 @@
 """Sprint 8 — Alert Center API: unified alert management with ack/resolve/snooze."""
 from datetime import datetime
 from typing import Any, Dict, List, Optional
+from uuid import UUID
 import io
 
 from fastapi import APIRouter, Depends, HTTPException, Query
@@ -56,7 +57,6 @@ def list_alerts(
     db: Session = Depends(get_db),
 ):
     """List alerts with filters."""
-    from uuid import UUID
     org_id = user.get("org_id")
     if not org_id:
         raise HTTPException(400, "No organization")
@@ -92,7 +92,6 @@ def get_alert_stats(
     db: Session = Depends(get_db),
 ):
     """Get alert counts by severity and status."""
-    from uuid import UUID
     org_id = user.get("org_id")
     if not org_id:
         raise HTTPException(400, "No organization")
@@ -127,7 +126,6 @@ def get_alert(
     db: Session = Depends(get_db),
 ):
     """Get alert detail."""
-    from uuid import UUID
     org_id = user.get("org_id")
     if not org_id:
         raise HTTPException(400, "No organization")
@@ -150,7 +148,6 @@ def acknowledge_alert(
     db: Session = Depends(get_db),
 ):
     """Acknowledge an alert."""
-    from uuid import UUID
     org_id = user.get("org_id")
     if not org_id:
         raise HTTPException(400, "No organization")
@@ -178,7 +175,6 @@ def resolve_alert(
     db: Session = Depends(get_db),
 ):
     """Resolve an alert."""
-    from uuid import UUID
     org_id = user.get("org_id")
     if not org_id:
         raise HTTPException(400, "No organization")
@@ -210,7 +206,6 @@ def snooze_alert(
     db: Session = Depends(get_db),
 ):
     """Snooze an alert."""
-    from uuid import UUID
     org_id = user.get("org_id")
     if not org_id:
         raise HTTPException(400, "No organization")
@@ -333,7 +328,6 @@ def export_alerts_pdf(
     db: Session = Depends(get_db),
 ):
     """Export alerts as a PDF report."""
-    from uuid import UUID
     org_id = user.get("org_id")
     if not org_id:
         raise HTTPException(400, "No organization")
