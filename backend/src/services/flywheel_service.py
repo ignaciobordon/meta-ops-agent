@@ -45,8 +45,8 @@ FLYWHEEL_STEPS = [
 _JOB_STEPS = {"meta_sync", "unified_intelligence", "creatives", "content_studio"}
 
 # Maximum seconds to wait for a single job to complete
-_POLL_TIMEOUT = 900
-_POLL_INTERVAL = 2
+_POLL_TIMEOUT = 300   # 5 minutes (reduced from 15 to avoid starving Celery workers)
+_POLL_INTERVAL = 5    # 5 seconds (reduced DB churn by 60%)
 
 
 class FlywheelService:
@@ -155,6 +155,13 @@ class FlywheelService:
             .all()
         )
 
+        # Batch: fetch all related jobs in a single query
+        job_run_ids = [s.job_run_id for s in steps if s.job_run_id]
+        jobs_by_id = {}
+        if job_run_ids:
+            jobs = self.db.query(JobRun).filter(JobRun.id.in_(job_run_ids)).all()
+            jobs_by_id = {j.id: j for j in jobs}
+
         steps_data = []
         for s in steps:
             step_dict = {
@@ -169,9 +176,9 @@ class FlywheelService:
                 "error_message": s.error_message,
                 "created_at": s.created_at.isoformat() if s.created_at else None,
             }
-            # Enrich with job status if applicable
+            # Enrich with job status from batch-loaded jobs
             if s.job_run_id:
-                job = self.db.query(JobRun).filter(JobRun.id == s.job_run_id).first()
+                job = jobs_by_id.get(s.job_run_id)
                 if job:
                     step_dict["job_status"] = job.status.value if job.status else None
                     step_dict["job_error"] = job.last_error_message
@@ -194,6 +201,8 @@ class FlywheelService:
 
     def list_runs(self, limit: int = 20) -> List[Dict[str, Any]]:
         """Return recent flywheel runs for the org."""
+        from sqlalchemy import func, case
+
         runs = (
             self.db.query(FlywheelRun)
             .filter(FlywheelRun.org_id == self.org_id)
@@ -201,21 +210,26 @@ class FlywheelService:
             .limit(limit)
             .all()
         )
+        if not runs:
+            return []
+
+        # Batch: get step counts and succeeded counts in a single query
+        run_ids = [r.id for r in runs]
+        counts = (
+            self.db.query(
+                FlywheelStep.flywheel_run_id,
+                func.count(FlywheelStep.id).label("total"),
+                func.count(case((FlywheelStep.status == "succeeded", 1))).label("succeeded"),
+            )
+            .filter(FlywheelStep.flywheel_run_id.in_(run_ids))
+            .group_by(FlywheelStep.flywheel_run_id)
+            .all()
+        )
+        counts_map = {row[0]: (row[1], row[2]) for row in counts}
+
         result = []
         for r in runs:
-            step_count = (
-                self.db.query(FlywheelStep)
-                .filter(FlywheelStep.flywheel_run_id == r.id)
-                .count()
-            )
-            succeeded_count = (
-                self.db.query(FlywheelStep)
-                .filter(
-                    FlywheelStep.flywheel_run_id == r.id,
-                    FlywheelStep.status == "succeeded",
-                )
-                .count()
-            )
+            total, succeeded = counts_map.get(r.id, (0, 0))
             result.append({
                 "id": str(r.id),
                 "status": r.status,
@@ -224,8 +238,8 @@ class FlywheelService:
                 "finished_at": r.finished_at.isoformat() if r.finished_at else None,
                 "created_at": r.created_at.isoformat() if r.created_at else None,
                 "error_message": r.error_message,
-                "steps_total": step_count,
-                "steps_succeeded": succeeded_count,
+                "steps_total": total,
+                "steps_succeeded": succeeded,
             })
         return result
 

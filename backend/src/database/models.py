@@ -838,6 +838,7 @@ class MetaInsightsDaily(Base):
             name="uq_meta_insights_daily",
         ),
         Index("ix_insights_entity", "org_id", "entity_meta_id", "date_start"),
+        Index("ix_insights_org_level_date", "org_id", "level", "date_start"),
     )
 
 
