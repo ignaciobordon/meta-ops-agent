@@ -25,12 +25,20 @@ class AuthEvent:
 
 
 def extract_client_ip(request) -> str:
-    """Extract client IP from FastAPI request, respecting X-Forwarded-For."""
+    """Extract client IP from FastAPI request.
+
+    Only trusts X-Forwarded-For when TRUSTED_PROXY_DEPTH > 0 to prevent
+    IP spoofing attacks against rate limiting and audit logging.
+    """
     if request is None:
         return "unknown"
-    forwarded = request.headers.get("X-Forwarded-For")
-    if forwarded:
-        return forwarded.split(",")[0].strip()
+    from backend.src.config import settings
+    if settings.TRUSTED_PROXY_DEPTH > 0:
+        forwarded = request.headers.get("X-Forwarded-For")
+        if forwarded:
+            parts = [p.strip() for p in forwarded.split(",")]
+            idx = max(0, len(parts) - settings.TRUSTED_PROXY_DEPTH)
+            return parts[idx]
     return request.client.host if request.client else "unknown"
 
 

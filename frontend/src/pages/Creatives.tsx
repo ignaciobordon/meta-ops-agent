@@ -5,6 +5,7 @@ import { useLanguage } from '../contexts/LanguageContext';
 import GenerateCreativeModal, { CreativeFormData } from '../components/GenerateCreativeModal';
 import { creativesApi, Creative } from '../services/api';
 import { useJobPolling } from '../hooks/useJobPolling';
+import { downloadBlob } from '../utils/download';
 import './Creatives.css';
 
 const DIMENSION_LABELS: Record<string, { en: string; es: string }> = {
@@ -124,15 +125,7 @@ export default function Creatives() {
     try {
       setExportingPdf(true);
       const res = await creativesApi.exportPdf();
-      const blob = new Blob([res.data], { type: 'application/pdf' });
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = 'creatives_report.pdf';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
+      downloadBlob(res.data, 'creatives_report.pdf', 'application/pdf');
     } catch (err) {
       console.error('Failed to export PDF:', err);
     } finally {

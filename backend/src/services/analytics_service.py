@@ -12,41 +12,13 @@ from backend.src.database.models import (
     MetaAdAccount,
     InsightLevel,
 )
+from backend.src.utils.meta_helpers import OBJECTIVE_LABELS, parse_date_range
 
-# ── Objective labels ─────────────────────────────────────────────────────────
+# ── Objective labels (override shared labels for analytics categorisation) ───
 
-_OBJECTIVE_LABELS = {
-    "OUTCOME_AWARENESS": "Awareness",
-    "OUTCOME_ENGAGEMENT": "Engagement",
-    "OUTCOME_LEADS": "Leads",
-    "OUTCOME_SALES": "Sales",
-    "OUTCOME_TRAFFIC": "Traffic",
-    "OUTCOME_APP_PROMOTION": "App Promotion",
-    "BRAND_AWARENESS": "Brand Awareness",
-    "REACH": "Reach",
-    "LINK_CLICKS": "Traffic",
-    "POST_ENGAGEMENT": "Engagement",
-    "VIDEO_VIEWS": "Video Views",
-    "LEAD_GENERATION": "Lead Generation",
-    "CONVERSIONS": "Conversions",
-    "PRODUCT_CATALOG_SALES": "Catalog Sales",
-    "MESSAGES": "Messages",
-}
+_OBJECTIVE_LABELS = {**OBJECTIVE_LABELS, "LINK_CLICKS": "Traffic", "POST_ENGAGEMENT": "Engagement"}
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
-
-def _parse_since(days: int, since: Optional[str] = None, until: Optional[str] = None):
-    """Return (since_dt, until_dt) from either explicit dates or days offset."""
-    if since:
-        since_dt = datetime.strptime(since, "%Y-%m-%d")
-    else:
-        since_dt = datetime.utcnow() - timedelta(days=days)
-
-    until_dt = None
-    if until:
-        until_dt = datetime.strptime(until, "%Y-%m-%d") + timedelta(days=1)  # inclusive
-
-    return since_dt, until_dt
 
 
 def _apply_date_filter(query, since_dt, until_dt):
@@ -72,7 +44,7 @@ def get_metrics_over_time(
     ad_account_id: Optional[UUID] = None,
 ) -> dict:
     """Aggregate metrics with smart bucketing based on date span."""
-    since_dt, until_dt = _parse_since(days, since, until)
+    since_dt, until_dt = parse_date_range(days, since, until)
     effective_until = until_dt or datetime.utcnow()
     span_days = (effective_until - since_dt).days
 
@@ -162,7 +134,7 @@ def get_performance_summary(
     ad_account_id: Optional[UUID] = None,
 ) -> dict:
     """Aggregate performance summary with period-over-period trends."""
-    since_dt, until_dt = _parse_since(days, since, until)
+    since_dt, until_dt = parse_date_range(days, since, until)
     effective_until = until_dt or datetime.utcnow()
     span = effective_until - since_dt
 
@@ -271,7 +243,7 @@ def get_spend_over_time(
     ad_account_id: Optional[UUID] = None,
 ) -> List[dict]:
     """Get daily spend aggregation."""
-    since_dt, until_dt = _parse_since(days, since, until)
+    since_dt, until_dt = parse_date_range(days, since, until)
 
     query = db.query(
         MetaInsightsDaily.date_start,
@@ -307,7 +279,7 @@ def get_top_campaigns(
     ad_account_id: Optional[UUID] = None,
 ) -> List[dict]:
     """Get top campaigns by spend with objective, status, and enriched metrics."""
-    since_dt, until_dt = _parse_since(days, since, until)
+    since_dt, until_dt = parse_date_range(days, since, until)
 
     # Single query with JOIN — eliminates N+1
     query = db.query(
@@ -392,7 +364,7 @@ def generate_insights(
             If "offline", rules about zero conversions and ROAS are skipped
             because sales happen outside Meta.
     """
-    since_dt, until_dt = _parse_since(days, since, until)
+    since_dt, until_dt = parse_date_range(days, since, until)
     effective_until = until_dt or datetime.utcnow()
     span = effective_until - since_dt
 
@@ -552,7 +524,7 @@ def get_daily_breakdown(
     ad_account_id: Optional[UUID] = None,
 ) -> List[dict]:
     """Get daily breakdown of all key metrics."""
-    since_dt, until_dt = _parse_since(days, since, until)
+    since_dt, until_dt = parse_date_range(days, since, until)
 
     query = db.query(
         MetaInsightsDaily.date_start,

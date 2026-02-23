@@ -13,37 +13,9 @@ import {
   TopCampaign,
   InsightItem,
 } from '../services/api';
+import { fmt$, fmtN, trendArrow, trendClass, DATE_PRESETS } from '../utils/formatting';
+import { downloadBlob } from '../utils/download';
 import './Analytics.css';
-
-/* ── Formatters (match Brain) ──────────────────────────────────────────────── */
-
-function fmt$(v: number) {
-  if (v >= 1_000_000) return `$${(v / 1_000_000).toFixed(1)}M`;
-  if (v >= 1_000) return `$${(v / 1_000).toFixed(1)}K`;
-  return `$${v.toFixed(0)}`;
-}
-
-function fmtN(v: number) {
-  if (v >= 1_000_000) return `${(v / 1_000_000).toFixed(1)}M`;
-  if (v >= 1_000) return `${(v / 1_000).toFixed(1)}K`;
-  return v.toLocaleString();
-}
-
-function trendArrow(val: number | null) {
-  if (val === null || val === undefined) return '';
-  if (val > 0) return `+${val}%`;
-  if (val < 0) return `${val}%`;
-  return '0%';
-}
-
-function trendClass(val: number | null, invert?: boolean) {
-  if (val === null || val === undefined) return '';
-  const positive = invert ? val < 0 : val > 0;
-  const negative = invert ? val > 0 : val < 0;
-  if (positive) return 'trend-up';
-  if (negative) return 'trend-down';
-  return '';
-}
 
 /* ── Metric selector for chart ─────────────────────────────────────────────── */
 
@@ -61,17 +33,6 @@ const CHART_METRICS: { key: ChartMetric; label: string; format: (v: number) => s
 
 type SortField = keyof TopCampaign;
 type SortDir = 'asc' | 'desc';
-
-/* ── Date presets ─────────────────────────────────────────────────────────── */
-
-const DATE_PRESETS = [
-  { label: '7d', days: 7 },
-  { label: '14d', days: 14 },
-  { label: '30d', days: 30 },
-  { label: '90d', days: 90 },
-  { label: '365d', days: 365 },
-  { label: 'All', days: 730 },
-];
 
 /* ── Y-axis tick helper ──────────────────────────────────────────────────── */
 
@@ -197,15 +158,7 @@ export default function Analytics() {
       setExportingPdf(true);
       const p = customSince ? { days: undefined, since: customSince, until: customUntil || undefined } : { days, since: undefined, until: undefined };
       const res = await analyticsApi.exportPdf(p.days, p.since, p.until, selectedAccountId || undefined);
-      const blob = new Blob([res.data], { type: 'application/pdf' });
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = 'analytics_report.pdf';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
+      downloadBlob(res.data, 'analytics_report.pdf', 'application/pdf');
     } catch (err) {
       console.error('Failed to export PDF:', err);
     } finally {
@@ -218,15 +171,7 @@ export default function Analytics() {
       setExportingXlsx(true);
       const p = customSince ? { days: undefined, since: customSince, until: customUntil || undefined } : { days, since: undefined, until: undefined };
       const res = await analyticsApi.exportXlsx(p.days, p.since, p.until, selectedAccountId || undefined);
-      const blob = new Blob([res.data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = 'analytics_report.xlsx';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
+      downloadBlob(res.data, 'analytics_report.xlsx', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
     } catch (err) {
       console.error('Failed to export XLSX:', err);
     } finally {

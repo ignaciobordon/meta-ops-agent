@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { creativesApi, contentStudioApi, Creative, ContentPackSummary } from '../services/api';
 import { useJobPolling } from '../hooks/useJobPolling';
+import { downloadBlob } from '../utils/download';
 import './ContentStudio.css';
 
 // Presets
@@ -265,15 +266,7 @@ export default function ContentStudio() {
     setExportingPdf(true);
     try {
       const res = await contentStudioApi.exportPdf(packId);
-      const blob = new Blob([res.data], { type: 'application/pdf' });
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `content_pack_${packId.substring(0, 8)}.pdf`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
+      downloadBlob(res.data, `content_pack_${packId.substring(0, 8)}.pdf`, 'application/pdf');
     } catch {
       setError('Failed to export PDF');
     } finally {
@@ -286,15 +279,7 @@ export default function ContentStudio() {
     setExportingXlsx(true);
     try {
       const res = await contentStudioApi.exportXlsx(packId);
-      const blob = new Blob([res.data], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `content_pack_${packId.substring(0, 8)}.xlsx`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
+      downloadBlob(res.data, `content_pack_${packId.substring(0, 8)}.xlsx`, 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
     } catch {
       setError('Failed to export XLSX');
     } finally {

@@ -132,19 +132,36 @@ class UnifiedIntelligenceService:
         # Equal cap per competitor
         max_items_per_competitor = max(2, 10 // max(len(competitors), 1))
 
+        from sqlalchemy import func
+
         comp_data = []
         all_competitor_names = [c.name for c in competitors]
         extraction_audit = {}  # per-competitor proof of extraction
 
-        # Also count total items in DB per competitor (uncapped) for audit
-        for comp in competitors:
-            total_in_db = self.db.query(CICanonicalItem).filter(
-                CICanonicalItem.competitor_id == comp.id,
-            ).count()
+        # Batch: get total counts per competitor in a single query
+        competitor_ids = [c.id for c in competitors]
+        count_rows = (
+            self.db.query(CICanonicalItem.competitor_id, func.count(CICanonicalItem.id))
+            .filter(CICanonicalItem.competitor_id.in_(competitor_ids))
+            .group_by(CICanonicalItem.competitor_id)
+            .all()
+        )
+        total_counts = {row[0]: row[1] for row in count_rows}
 
-            items = self.db.query(CICanonicalItem).filter(
-                CICanonicalItem.competitor_id == comp.id,
-            ).order_by(CICanonicalItem.last_seen_at.desc()).limit(max_items_per_competitor).all()
+        # Batch: fetch all items for all competitors (capped per competitor via Python)
+        all_items = (
+            self.db.query(CICanonicalItem)
+            .filter(CICanonicalItem.competitor_id.in_(competitor_ids))
+            .order_by(CICanonicalItem.competitor_id, CICanonicalItem.last_seen_at.desc())
+            .all()
+        )
+        items_by_comp = {}
+        for item in all_items:
+            items_by_comp.setdefault(item.competitor_id, []).append(item)
+
+        for comp in competitors:
+            total_in_db = total_counts.get(comp.id, 0)
+            items = items_by_comp.get(comp.id, [])[:max_items_per_competitor]
 
             sample_titles = []
             angles_seen = []

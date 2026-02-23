@@ -1,5 +1,6 @@
 import { NavLink } from 'react-router-dom';
 import { Home, FileText, Sliders, BookOpen, Palette, Layers, TrendingUp, Lightbulb, Radar, Shield, ScrollText, HelpCircle, Settings, LogOut, Brain, Activity, BarChart3, Bell, Repeat, Database } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useAuth } from '../../auth/AuthContext';
 import LanguageSelector from '../LanguageSelector';
@@ -7,7 +8,7 @@ import './Sidebar.css';
 
 interface NavItem {
   path: string;
-  icon: any;
+  icon: LucideIcon;
   labelKey: string;
 }
 

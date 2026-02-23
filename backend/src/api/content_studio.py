@@ -656,7 +656,7 @@ def publish_variant_to_meta(
     # Verify variant belongs to pack
     variant = db.query(ContentVariant).filter(
         ContentVariant.id == _UUID(variant_id),
-        ContentVariant.pack_id == _UUID(pack_id),
+        ContentVariant.content_pack_id == _UUID(pack_id),
     ).first()
     if not variant:
         raise HTTPException(404, "Variant not found in this pack")

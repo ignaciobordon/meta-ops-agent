@@ -103,12 +103,12 @@ class MetaApiClient:
 
     def _do_request(self, url: str, params: Dict[str, Any]) -> Dict[str, Any]:
         """Execute a single HTTP GET to Meta Graph API (sync, called via safe_call)."""
-        import requests
+        import httpx
 
         self._check_token_expiry()
 
         params["access_token"] = self._get_token()
-        resp = requests.get(url, params=params, timeout=30)
+        resp = httpx.get(url, params=params, timeout=30)
 
         # Handle rate limiting
         if resp.status_code == 429 or (

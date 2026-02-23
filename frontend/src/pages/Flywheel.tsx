@@ -1,15 +1,17 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Repeat, RefreshCw, Brain, TrendingUp, Sparkles, Lightbulb, Palette, Layers, FileDown, Loader2, Eye, RotateCcw, StopCircle, Download, ChevronDown, ChevronUp } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { flywheelApi, FlywheelRunResponse, FlywheelStepResponse } from '../services/api';
 import { useJobPolling } from '../hooks/useJobPolling';
+import { downloadBlob } from '../utils/download';
 import './Flywheel.css';
 
 interface StepDef {
   key: string;
   labelKey: string;
-  icon: any;
+  icon: LucideIcon;
   route: string;
 }
 
@@ -269,15 +271,7 @@ export default function Flywheel() {
     try {
       setDownloadingPdf(true);
       const res = await flywheelApi.exportPdf(activeRun.id);
-      const blob = new Blob([res.data], { type: 'application/pdf' });
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `flywheel-report-${activeRun.id.slice(0, 8)}.pdf`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
+      downloadBlob(res.data, `flywheel-report-${activeRun.id.slice(0, 8)}.pdf`, 'application/pdf');
     } catch (err) {
       console.error('Failed to download PDF:', err);
       setError('Failed to download report PDF');

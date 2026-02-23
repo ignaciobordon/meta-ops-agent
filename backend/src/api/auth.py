@@ -324,8 +324,14 @@ async def login(body: LoginRequest, request: Request, db: Session = Depends(get_
 
 
 @router.post("/register", response_model=TokenResponse)
-def register(body: RegisterRequest, request: Request, db: Session = Depends(get_db)):
+async def register(body: RegisterRequest, request: Request, db: Session = Depends(get_db)):
     """Register a new user. First user in an org gets admin, rest get viewer."""
+    # Rate limit registration to prevent enumeration attacks
+    ip = extract_client_ip(request)
+    allowed, headers = await login_limiter.is_allowed(ip)
+    if not allowed:
+        raise HTTPException(status_code=429, detail="Too many registration attempts", headers=headers)
+
     existing = db.query(User).filter(User.email == body.email).first()
     if existing:
         raise HTTPException(status_code=400, detail="Email already registered")

@@ -7,6 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import { FileDown, Zap } from 'lucide-react';
 import { useLanguage } from '../contexts/LanguageContext';
 import { alertsApi } from '../services/api';
+import { downloadBlob } from '../utils/download';
 import './AlertCenter.css';
 
 interface Alert {
@@ -85,15 +86,7 @@ export default function AlertCenter() {
         status: statusFilter || undefined,
         severity: severityFilter || undefined,
       });
-      const blob = new Blob([res.data], { type: 'application/pdf' });
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = 'alerts_report.pdf';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
+      downloadBlob(res.data, 'alerts_report.pdf', 'application/pdf');
     } catch (err) {
       console.error('Failed to export PDF:', err);
     } finally {
